@@ -33,6 +33,8 @@ export interface AppSettings {
   decisionFields: Array<{ id: string; label: string }>;
   /** Replies shorter than this never count as a draft (a typed greeting is not a draft). */
   minDraftChars: number;
+  /** When set, the app watches only tickets carrying this tag; every other ticket is never read. */
+  scopeTag: string | null;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -42,6 +44,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   captureInternalNotes: false,
   decisionFields: [],
   minDraftChars: 80,
+  scopeTag: null,
 };
 
 /** Parses the app's metadata settings (strings and booleans from the manifest). */
@@ -72,7 +75,18 @@ export function settingsFrom(raw: Record<string, unknown>): AppSettings {
     captureInternalNotes: bool("capture_internal_notes", DEFAULT_SETTINGS.captureInternalNotes),
     decisionFields: fields,
     minDraftChars: Number.isFinite(min) && min > 0 ? min : DEFAULT_SETTINGS.minDraftChars,
+    scopeTag: str("scope_tag"),
   };
+}
+
+/**
+ * Whether the app should watch this ticket at all. With no scope tag every ticket is watched,
+ * but nothing is read beyond the reply box until a draft appears (see main.ts). With a scope
+ * tag, tickets without it are never read, not even the reply box.
+ */
+export function inScope(tags: readonly string[], settings: AppSettings): boolean {
+  if (!settings.scopeTag) return true;
+  return tags.includes(settings.scopeTag);
 }
 
 /**

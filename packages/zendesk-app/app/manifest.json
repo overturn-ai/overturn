@@ -61,6 +61,12 @@
       "helpText": "Custom fields that are the decision, as id:label pairs, e.g. custom_field_123:status, custom_field_456:reserve. Changes to these are scored exactly."
     },
     {
+      "name": "scope_tag",
+      "type": "text",
+      "required": false,
+      "helpText": "Optional. Only tickets carrying this tag are watched; every other ticket is never read, not even the reply box. Without it, every ticket's reply box is watched but nothing else is read until an AI draft appears."
+    },
+    {
       "name": "min_draft_chars",
       "type": "text",
       "required": false,

@@ -4,6 +4,7 @@ import {
   createDraftDetector,
   DEFAULT_SETTINGS,
   decideOnSend,
+  inScope,
   settingsFrom,
   statusLine,
   stripHtml,
@@ -51,6 +52,14 @@ describe("settings", () => {
     ]);
     expect(s.minDraftChars).toBe(120);
   });
+  it("a scope tag limits which tickets are watched at all", () => {
+    expect(inScope(["billing"], DEFAULT_SETTINGS)).toBe(true);
+    const scoped = settingsFrom({ scope_tag: "ai_drafted" });
+    expect(scoped.scopeTag).toBe("ai_drafted");
+    expect(inScope(["billing"], scoped)).toBe(false);
+    expect(inScope(["billing", "ai_drafted"], scoped)).toBe(true);
+  });
+
   it("falls back to defaults, with require_reason on", () => {
     expect(settingsFrom({})).toEqual(DEFAULT_SETTINGS);
     expect(settingsFrom({ require_reason: "false" }).requireReason).toBe(false);

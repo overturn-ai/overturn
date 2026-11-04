@@ -4,6 +4,7 @@ import {
   createDraftDetector,
   type DraftState,
   decideOnSend,
+  inScope,
   QUICK_REASONS,
   settingsFrom,
   statusLine,
@@ -87,6 +88,18 @@ async function main(): Promise<void> {
 
   const ticketId = (await client.get<{ "ticket.id": number }>("ticket.id"))["ticket.id"];
 
+  // Scope: with a tag configured, a ticket without it is never read, not even the reply box.
+  if (settings.scopeTag) {
+    const tags = (await client.get<{ "ticket.tags": string[] }>("ticket.tags"))["ticket.tags"] ?? [];
+    if (!inScope(tags, settings)) {
+      status.textContent = `Not watching: no "${settings.scopeTag}" tag`;
+      quick.remove();
+      reason.remove();
+      mark.remove();
+      return;
+    }
+  }
+
   // A drafting agent that recorded its run with the SDK: the draft is its output.
   try {
     const found = await client.request<{ items: Array<{ id: string; output: unknown; agent: string }> }>({
@@ -128,6 +141,11 @@ async function main(): Promise<void> {
 
   client.on("ticket.save", async () => {
     const draft: DraftState | null = detector.current();
+    // Nothing beyond the reply box is read until a draft exists: a human-only thread never
+    // leaves Zendesk and is never even loaded into this iframe.
+    if (!draft) return true;
+    const kind = await client.get<{ "ticket.comment.type": string }>("ticket.comment.type");
+    if (kind["ticket.comment.type"] === "internalNote" && !settings.captureInternalNotes) return true;
     const data = await client.get<Record<string, unknown>>([
       "ticket.comment.text",
       "ticket.comment.type",
