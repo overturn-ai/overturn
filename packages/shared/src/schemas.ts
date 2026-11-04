@@ -246,6 +246,16 @@ export const exportSettingsSchema = z.object({
 });
 export type ExportSettings = z.infer<typeof exportSettingsSchema>;
 
+export const privacySettingsSchema = z.object({
+  /**
+   * Off = no model call for this project leaves the network: replay targets, the judge,
+   * embeddings and hosted training all refuse hosted providers; `local/` and lexical retrieval
+   * still work. The switch that makes "nothing leaves your VPC" a property of state.
+   */
+  hostedModelCalls: z.boolean().default(true),
+});
+export type PrivacySettings = z.infer<typeof privacySettingsSchema>;
+
 export const projectSettingsSchema = z.object({
   defaultScorer: scorerNameSchema.nullable().default(null),
   judgeModel: z.string().default("openai/gpt-4.1-mini"),
@@ -262,6 +272,7 @@ export const projectSettingsSchema = z.object({
   retrain: retrainSettingsSchema.default(retrainSettingsSchema.parse({})),
   capture: captureSettingsSchema.default(captureSettingsSchema.parse({})),
   export: exportSettingsSchema.default(exportSettingsSchema.parse({})),
+  privacy: privacySettingsSchema.default(privacySettingsSchema.parse({})),
 });
 export type ProjectSettings = z.infer<typeof projectSettingsSchema>;
 
@@ -714,6 +725,7 @@ export const projectPatchSchema = z.object({
       retrain: retrainSettingsSchema.partial().optional(),
       capture: captureSettingsSchema.partial().optional(),
       export: exportSettingsSchema.partial().optional(),
+      privacy: privacySettingsSchema.partial().optional(),
     })
     .optional(),
 });

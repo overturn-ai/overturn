@@ -30,7 +30,7 @@ import {
   trainedModels,
 } from "../db/schema";
 import { ExportService } from "../export/export.service";
-import { ModelRegistry, parseModel } from "../models/registry";
+import { hostedOffMessage, ModelRegistry, parseModel } from "../models/registry";
 import { NotifyService } from "../notify/notify.service";
 import { parseSettings } from "../projects/settings";
 import { callModel } from "../replay/model-call";
@@ -112,6 +112,14 @@ export class TrainingService {
     input: TrainCreate,
     trigger: "manual" | "auto" = "manual",
   ): Promise<TrainedModel> {
+    // A fine-tune uploads the correction set to Together: the privacy switch covers it too.
+    if (!(await this.replay.registryFor(projectId)).isConfigured("together")) {
+      throw new BadRequestException(
+        this.registry.isConfigured("together")
+          ? hostedOffMessage("together")
+          : "TOGETHER_API_KEY is not set on this server",
+      );
+    }
     this.together();
     const filter: CaseFilter = { status: "active", ...input.filter };
     const stats = await this.exporter.stats(projectId, {
@@ -155,9 +163,12 @@ export class TrainingService {
    */
   async register(projectId: string, input: ModelRegister): Promise<TrainedModel> {
     const { provider } = parseModel(input.servedAs);
-    if (!this.registry.isConfigured(provider))
+    const registry = await this.replay.registryFor(projectId);
+    if (!registry.isConfigured(provider))
       throw new BadRequestException(
-        `Provider ${provider} is not configured on the server (for local/ set LOCAL_MODEL_BASE_URL)`,
+        this.registry.isConfigured(provider)
+          ? hostedOffMessage(provider)
+          : `Provider ${provider} is not configured on the server (for local/ set LOCAL_MODEL_BASE_URL)`,
       );
     const filter: CaseFilter = { status: "active", ...input.filter };
     const stats =
@@ -277,8 +288,11 @@ export class TrainingService {
       return this.get(m.projectId, id);
     }
     const { provider } = parseModel(m.servedAs);
-    if (!this.registry.isConfigured(provider)) {
-      await this.fail(id, new Error(`cannot gate: provider ${provider} is not configured`));
+    if (!(await this.replay.registryFor(m.projectId)).isConfigured(provider)) {
+      await this.fail(
+        id,
+        new Error(`cannot gate: provider ${provider} is not configured or hosted calls are off`),
+      );
       return this.get(m.projectId, id);
     }
     await this.set(id, { status: "gating" });
@@ -692,7 +706,8 @@ export class TrainingService {
     for (const m of models) {
       if (!m.servedAs || !m.shadowSince) continue;
       const { provider } = parseModel(m.servedAs);
-      if (!this.registry.isConfigured(provider)) continue;
+      const registry = await this.replay.registryFor(m.projectId);
+      if (!registry.isConfigured(provider)) continue;
       const filter = m.caseFilter as CaseFilter;
       const pending = await this.db
         .select({ id: runs.id, output: runs.output })
@@ -740,7 +755,7 @@ export class TrainingService {
     };
     const t0 = Date.now();
     try {
-      const model = this.registry.languageModel(m.servedAs!);
+      const model = (await this.replay.registryFor(m.projectId)).languageModel(m.servedAs!);
       const res = await this.replay.withRetry(parseModel(m.servedAs!).provider, () =>
         callModel(model, frozen),
       );

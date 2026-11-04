@@ -44,7 +44,13 @@ import {
   responseCache,
 } from "../db/schema";
 import { ExamplesService, inputTextOf } from "../examples/examples.service";
-import { fakeEmbedding, ModelRegistry, PROVIDER_CONCURRENCY, parseModel } from "../models/registry";
+import {
+  fakeEmbedding,
+  hostedOffMessage,
+  ModelRegistry,
+  PROVIDER_CONCURRENCY,
+  parseModel,
+} from "../models/registry";
 import { parseSettings } from "../projects/settings";
 import { buildMessages, callModel } from "./model-call";
 
@@ -180,12 +186,21 @@ export class ReplayService {
     this.registry = new ModelRegistry(config);
   }
 
+  /** The registry as this project sees it (settings.privacy.hostedModelCalls). */
+  async registryFor(projectId: string): Promise<ModelRegistry> {
+    const [row] = await this.db.execute(sql`select settings from projects where id = ${projectId}`);
+    const settings = parseSettings((row as { settings?: unknown } | undefined)?.settings);
+    return this.registry.scoped(settings.privacy.hostedModelCalls);
+  }
+
   /** The embedder examples need, or a clear error naming the keys that would provide one. */
   examplesContext(
-    settings: { embeddingModel: string },
+    settings: { embeddingModel: string; privacy?: { hostedModelCalls: boolean } },
     ctx: ScorerContext,
   ): { embed: NonNullable<ScorerContext["embed"]>; model: string } | null {
-    const model = this.registry.resolveEmbeddingModel(settings.embeddingModel);
+    const model = this.registry
+      .scoped(settings.privacy?.hostedModelCalls ?? true)
+      .resolveEmbeddingModel(settings.embeddingModel);
     if (!model || !ctx.embed) return null; // lexical retrieval
     return { embed: ctx.embed, model };
   }
@@ -230,11 +245,15 @@ export class ReplayService {
     startedBy: string | null = null,
   ): Promise<{ job: ReplayJob; jobs: ReplayJob[]; estimate: ReplayEstimate; caseIds: string[] }> {
     const models = [input.model, ...(input.models ?? []).filter((m) => m !== input.model)];
+    const registry = await this.registryFor(projectId);
     for (const model of models) {
       const { provider } = parseModel(model);
-      if (!this.registry.isConfigured(provider) && input.mode === "step") {
+      if (!registry.isConfigured(provider) && input.mode === "step") {
+        // Configured on the server but off for this project: say which switch, not "missing key".
         throw new BadRequestException(
-          `Provider "${provider}" is not configured on this server (missing API key)`,
+          this.registry.isConfigured(provider)
+            ? hostedOffMessage(provider)
+            : `Provider "${provider}" is not configured on this server (missing API key)`,
         );
       }
     }
@@ -415,20 +434,21 @@ export class ReplayService {
     settings: ReturnType<typeof parseSettings>,
     charge: (usd: number) => void,
   ): ScorerContext {
-    const judgeModelId = this.registry.resolveJudgeModel(settings.judgeModel) ?? settings.judgeModel;
+    const registry = this.registry.scoped(settings.privacy.hostedModelCalls);
+    const judgeModelId = registry.resolveJudgeModel(settings.judgeModel) ?? settings.judgeModel;
     if (judgeModelId !== settings.judgeModel) {
       this.logger.warn(`judge ${settings.judgeModel} has no key; using ${judgeModelId}`);
     }
     const embeddingModelId =
-      this.registry.resolveEmbeddingModel(settings.embeddingModel) ?? settings.embeddingModel;
+      registry.resolveEmbeddingModel(settings.embeddingModel) ?? settings.embeddingModel;
     const judgeProvider = parseModel(judgeModelId).provider;
     const embedProvider = parseModel(embeddingModelId).provider;
     const ctx: ScorerContext = {};
-    if (this.registry.isConfigured(judgeProvider)) {
+    if (registry.isConfigured(judgeProvider)) {
       ctx.judge = async (prompt: string): Promise<JudgeVerdict> => {
         const cached = await this.cached(judgeModelId, { judge: prompt });
         if (cached) return cached.output as JudgeVerdict;
-        const model = this.registry.languageModel(judgeModelId);
+        const model = registry.languageModel(judgeModelId);
         let res: Awaited<ReturnType<typeof generateText>>;
         try {
           res = await this.withRetry(judgeProvider, () =>
@@ -467,11 +487,11 @@ export class ReplayService {
         return verdict;
       };
     }
-    if (this.registry.isConfigured(embedProvider)) {
+    if (registry.isConfigured(embedProvider)) {
       ctx.embed = async (text: string): Promise<number[]> => {
         const cached = await this.cached(embeddingModelId, { embed: text });
         if (cached) return cached.output as number[];
-        const model = this.registry.embeddingModel(embeddingModelId);
+        const model = registry.embeddingModel(embeddingModelId);
         let vector: number[];
         let cost = 0;
         if (!model) vector = fakeEmbedding(text);
@@ -595,7 +615,7 @@ export class ReplayService {
       spent += usd;
     };
     const ctx = this.scorerContext(projectId, settings, charge);
-    const model = this.registry.languageModel(job.targetModel);
+    const model = this.registry.scoped(settings.privacy.hostedModelCalls).languageModel(job.targetModel);
     let completed = 0;
 
     const runOne = async (c: Case): Promise<void> => {

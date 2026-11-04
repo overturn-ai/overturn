@@ -28,8 +28,30 @@ export const PROVIDER_CONCURRENCY: Record<string, number> = {
   fake: 16,
 };
 
+/** Providers whose calls leave the customer's network. `local/` and `fake/` never do. */
+export const HOSTED_PROVIDERS = ["openai", "anthropic", "google", "openrouter", "together"] as const;
+
 export class ModelRegistry {
-  constructor(private readonly config: AppConfig) {}
+  constructor(
+    private readonly config: AppConfig,
+    /** False = this project allows no hosted model calls: replay, judge, embeddings and training all stay local. */
+    private readonly hostedModelCalls = true,
+  ) {}
+
+  /**
+   * The registry as one project sees it. With `settings.privacy.hostedModelCalls` off, every
+   * hosted provider reports as not configured and refuses to build a model, so "nothing leaves
+   * your VPC, model calls included" is a property of state, not of who remembered to set keys.
+   */
+  scoped(hostedModelCalls: boolean): ModelRegistry {
+    return hostedModelCalls === this.hostedModelCalls
+      ? this
+      : new ModelRegistry(this.config, hostedModelCalls);
+  }
+
+  private hostedBlocked(provider: string): boolean {
+    return !this.hostedModelCalls && (HOSTED_PROVIDERS as readonly string[]).includes(provider);
+  }
 
   /** The fake provider: an OpenAI-compatible server (examples/ticket-triage fake-openai) for keyless runs. */
   private fakeBaseUrl(): string {
@@ -55,6 +77,7 @@ export class ModelRegistry {
   }
 
   isConfigured(provider: string): boolean {
+    if (this.hostedBlocked(provider)) return false;
     switch (provider) {
       case "openai":
         return Boolean(this.config.OPENAI_API_KEY);
@@ -77,6 +100,7 @@ export class ModelRegistry {
 
   languageModel(id: string): LanguageModel {
     const { provider, model } = parseModel(id);
+    if (this.hostedBlocked(provider)) throw new Error(hostedOffMessage(provider));
     switch (provider) {
       case "openai":
         return createOpenAI({
@@ -141,6 +165,7 @@ export class ModelRegistry {
   /** Embedding model, or null for fake/ which uses a deterministic local embedding. */
   embeddingModel(id: string): EmbeddingModel<string> | null {
     const { provider, model } = parseModel(id);
+    if (this.hostedBlocked(provider)) throw new Error(hostedOffMessage(provider));
     switch (provider) {
       case "openai":
         return createOpenAI({
@@ -185,4 +210,8 @@ export function fakeEmbedding(text: string): number[] {
     v[h.readUInt16BE(2) % 1536]! += 0.5;
   }
   return v;
+}
+
+export function hostedOffMessage(provider: string): string {
+  return `Hosted model calls are off for this project (settings.privacy.hostedModelCalls); "${provider}/" would leave your network. Use local/<model> (LOCAL_MODEL_BASE_URL) or turn hosted calls on in Settings.`;
 }

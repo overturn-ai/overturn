@@ -38,6 +38,7 @@ export default function SettingsPage() {
     reviewWebhookUrl: string;
     newPathsBlock: boolean;
     captureShowByExpert: boolean;
+    hostedModelCalls: boolean;
     retrainEnabled: boolean;
     retrainBaseModel: string;
     retrainMinNewRows: string;
@@ -82,6 +83,7 @@ export default function SettingsPage() {
           reviewWebhookUrl: (form!.reviewWebhookUrl ?? "").trim() || null,
           newPathsBlock: form!.newPathsBlock,
           capture: { showByExpert: form!.captureShowByExpert },
+          privacy: { hostedModelCalls: form!.hostedModelCalls },
           retrain: {
             enabled: form!.retrainEnabled,
             baseModel: form!.retrainBaseModel.trim() || null,
@@ -111,6 +113,7 @@ export default function SettingsPage() {
           reviewWebhookUrl: p.settings.reviewWebhookUrl ?? "",
           newPathsBlock: p.settings.newPathsBlock,
           captureShowByExpert: p.settings.capture?.showByExpert ?? false,
+          hostedModelCalls: p.settings.privacy?.hostedModelCalls ?? true,
           retrainEnabled: p.settings.retrain.enabled,
           retrainBaseModel: p.settings.retrain.baseModel ?? "",
           retrainMinNewRows: String(p.settings.retrain.minNewRows),
@@ -284,6 +287,24 @@ export default function SettingsPage() {
                     Off by default. When on, the Capture page lists how many corrections each expert
                     contributed, as credit. It never shows a per-person untouched rate or time to send; those
                     exist only as team numbers.
+                  </span>
+                </span>
+              </label>
+              <label className="flex items-start gap-2 text-sm sm:col-span-2">
+                <input
+                  type="checkbox"
+                  className="mt-1"
+                  checked={f.hostedModelCalls}
+                  onChange={(e) => setForm({ ...f, hostedModelCalls: e.target.checked })}
+                  data-testid="privacy-hosted-model-calls"
+                />
+                <span>
+                  Allow hosted model calls
+                  <span className="block text-xs text-muted-foreground">
+                    Off: no case content leaves your network. Replays, the judge, embeddings and fine-tunes
+                    refuse openai/, anthropic/, google/, openrouter/ and together/ models and say so; local/
+                    (LOCAL_MODEL_BASE_URL) and fake/ still work. Turn it off before you record anything you
+                    could not send to a model vendor.
                   </span>
                 </span>
               </label>

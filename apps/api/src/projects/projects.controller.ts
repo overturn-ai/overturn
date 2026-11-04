@@ -62,6 +62,7 @@ export class ProjectsController {
       retrain: { ...current.retrain, ...(incoming.retrain ?? {}) },
       capture: { ...current.capture, ...(incoming.capture ?? {}) },
       export: { ...current.export, ...(incoming.export ?? {}) },
+      privacy: { ...current.privacy, ...(incoming.privacy ?? {}) },
     });
     const [updated] = await this.db
       .update(projects)
