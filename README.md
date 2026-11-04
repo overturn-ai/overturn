@@ -10,9 +10,9 @@
 
 [Site](https://overturn.run) · [Docs](https://docs.overturn.run) · [Wiki](https://github.com/overrule-ai/overturn/wiki) · [Discussions](https://github.com/overrule-ai/overturn/discussions) · [Hosted app](https://app.overturn.run) · [Contributing](CONTRIBUTING.md)
 
-**Your experts fix the AI every day. Overturn keeps every fix.**
+**Overturn captures corrections where the expert already works (Zendesk, your own UI, the SDK), not in an annotation queue they have to visit.**
 
-Overturn is the system of record for how your company corrects AI. When an expert rewrites an AI draft, rejects a decision or corrects a diagnosis, Overturn captures what the AI produced, what the expert changed it to, and why, where the work already happens (a Zendesk app, two SDKs, OpenTelemetry). Every fix becomes a regression test that runs before any model or prompt change, and training data for a model you own and run yourself. Juniors and agents handle more cases on their own; your experts only see the new ones. Open source, Apache-2.0, self-hosted on one Postgres.
+It is the system of record for how your company corrects AI: when an adjuster rewrites an AI draft, reverses a decision or changes a reserve, Overturn keeps what the AI produced, what the expert changed it to, and why. When you run the agent yourself, each fix is a regression test that runs before any model or prompt change; either way it is a record that ops and compliance own, and training data for a model you run yourself. Open source, Apache-2.0, self-hosted on one Postgres down to the model calls.
 
 Claims teams first: a claims adjuster's corrections (coverage, reserve, denial reason, the reply itself) are structured enough to score exactly, frequent enough to compound, and worth keeping for compliance on their own. The same loop works for underwriting, field service and compliance review.
 

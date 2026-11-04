@@ -335,7 +335,7 @@
   <div>
     <div class="pill">Open beta · Apache-2.0 · insurance claims first</div>
     <h1>Your experts fix the AI every day. Overturn keeps every&nbsp;fix.</h1>
-    <p class="lede">When an adjuster rewrites the AI's coverage letter in Zendesk, <b>Overturn</b> captures what the AI drafted, what the expert sent and why. Every fix becomes a test that runs before any model or prompt change, and training data for a model you own. Juniors and agents handle more cases on their own; your experts only see the new ones.</p>
+    <p class="lede">When an adjuster rewrites the AI's coverage letter in Zendesk, <b>Overturn</b> captures what the AI drafted, what the expert sent and why. Each fix is a test when you run the agent, and a record either way: who changed what, and why, kept where compliance can find it. Juniors and agents handle more cases on their own; your experts only see the new ones.</p>
     <p class="sor">Overturn is the system of record for how your company corrects&nbsp;AI.</p>
     <div class="install"><div class="cmd"><span class="logos"><span style="background:#111">TS</span><span style="background:#3572a5">Py</span><span style="background:#f5a623">OT</span></span><code id="cmd">npm i @overturn-ai/sdk</code></div><button type="button" aria-label="Copy" data-copy="cmd"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button></div>
     <div class="ctas"><a class="btn primary" href="https://app.overturn.run/login">Start free</a><a class="btn" href="/docs/capture/">Zendesk app · no code</a><a class="btn" href="/docs/quickstart/">Read the docs</a></div>
@@ -654,7 +654,7 @@ const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
    b:[['deploy the prompt','—'],['hope nobody hits the payout path','?'],['re-read 200 tickets to be sure','afternoon']],bres:'<b>No proof.</b> Nothing tells you the other 24 cases still pass.'},
   {ask:'Train on 300 adjuster fixes and see if the model can take the first pass.',who:'Jo · owned model',
    a:[['overturn train --base llama-3.1-8b','20 min · gate 25/25'],['shadow on live tickets for a week','agrees with adjusters 91%'],['promote; juniors handle it unaided','experts see the new 9%']],ares:'<b>Judgment that compounds.</b> The next 9% get captured too.',
-   b:[['keep renting the frontier model','$ per call, forever'],['fixes vanish into tickets','nothing learns'],['experts re-check every case','headcount']],bres:'<b>Nothing improves.</b> The same mistakes, corrected by the same people, every week.'}];
+   b:[['keep renting the frontier model','$ per call, forever'],['fixes vanish into tickets','nothing learns'],['experts re-check every case','senior time']],bres:'<b>Nothing improves.</b> The same mistakes, corrected by the same people, every week.'}];
   const el=document.getElementById('cmp'),dots=document.getElementById('cmp-dots');let i=0,paused=reduce,timer;
   const row=(l)=>`<div class="line"><span class="w">${l[0].split(' ')[0]}</span><span>${l[0].split(' ').slice(1).join(' ')}</span><span class="m">${l[1]}</span></div>`;
   function render(n){i=n;const d=data[n];el.innerHTML=`<div class="ask"><span class="av"></span><div><div class="who">${d.who}</div><div class="bub">${d.ask}</div></div></div>

@@ -17,4 +17,6 @@ const ov = new Overturn({ redact: (step) => (step.name === "lookup_customer" ? {
 
 **Retention.** Per project, default 90 days for runs without a case. Runs behind a case are kept because they are the evidence.
 
+**Regulated data.** The record stores what the expert saw, as they saw it, encrypted at rest; redaction is applied at the export boundary, never at capture, because replay has to see the real input. Content is never pooled across customers: your corrections train nothing but your own models, and that is written into the DPA. **Do not send protected health information (workers' comp, medical claims) to the hosted service**: there is no BAA yet. Teams with PHI run Overturn themselves, where nothing leaves their network, model calls included (`LOCAL_MODEL_BASE_URL`, lexical retrieval, no external judge).
+
 **Hosted vs self-hosted.** The hosted service runs on Railway in the US. If your data cannot leave your network, run Overturn yourself: one Postgres with `pgvector`, two containers, documented in [Self-hosting](/docs/self-hosting/). The hosted and self-hosted builds are the same image.
