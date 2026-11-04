@@ -233,6 +233,19 @@ export const captureSettingsSchema = z.object({
 });
 export type CaptureSettings = z.infer<typeof captureSettingsSchema>;
 
+export const exportSettingsSchema = z.object({
+  /**
+   * Redaction applied to every string that leaves as training data. The record itself is
+   * never redacted (replay needs what the expert saw). Presets: email, phone, ssn, card.
+   */
+  redactPresets: z
+    .array(z.enum(["email", "phone", "ssn", "card"]))
+    .default(["email", "phone", "ssn", "card"]),
+  /** Extra regex sources (g, i flags), e.g. a policy-number format. */
+  redactPatterns: z.array(z.string().max(500)).max(50).default([]),
+});
+export type ExportSettings = z.infer<typeof exportSettingsSchema>;
+
 export const projectSettingsSchema = z.object({
   defaultScorer: scorerNameSchema.nullable().default(null),
   judgeModel: z.string().default("openai/gpt-4.1-mini"),
@@ -248,6 +261,7 @@ export const projectSettingsSchema = z.object({
   /** Opt-in continuous retraining: once enough new corrections pile up, train, gate, shadow, notify. Never promotes. */
   retrain: retrainSettingsSchema.default(retrainSettingsSchema.parse({})),
   capture: captureSettingsSchema.default(captureSettingsSchema.parse({})),
+  export: exportSettingsSchema.default(exportSettingsSchema.parse({})),
 });
 export type ProjectSettings = z.infer<typeof projectSettingsSchema>;
 
@@ -295,6 +309,8 @@ export const exportQuerySchema = z.object({
   since: z.string().optional(),
   /** Include approved cases as positive examples (sft only). */
   includeApproved: z.coerce.boolean().default(true),
+  /** Override the project's redaction: "email,phone,custom:HO3-\\d+" or "none". Omitted = project setting. */
+  redact: z.string().max(2000).optional(),
   limit: z.coerce.number().int().min(1).max(50_000).default(50_000),
 });
 export type ExportQuery = z.infer<typeof exportQuerySchema>;
@@ -697,6 +713,7 @@ export const projectPatchSchema = z.object({
     .extend({
       retrain: retrainSettingsSchema.partial().optional(),
       capture: captureSettingsSchema.partial().optional(),
+      export: exportSettingsSchema.partial().optional(),
     })
     .optional(),
 });

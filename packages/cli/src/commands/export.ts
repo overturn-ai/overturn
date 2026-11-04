@@ -21,6 +21,10 @@ export function registerExport(program: Command): void {
     .option("--no-approved", "sft: leave out approved cases, keep only edits")
     .option("--output <file>", "Write the JSONL here (default: stdout)")
     .option("--stats", "Only print what the export would contain")
+    .option(
+      "--redact <spec>",
+      'Override the project redaction: "email,phone,ssn,card,custom:<regex>" or "none" (training inside your own VPC)',
+    )
     .action(
       async (
         opts: {
@@ -32,6 +36,7 @@ export function registerExport(program: Command): void {
           approved: boolean;
           output?: string;
           stats?: boolean;
+          redact?: string;
         },
         cmd: Command,
       ) => {
@@ -45,6 +50,7 @@ export function registerExport(program: Command): void {
           set: opts.set,
           since: opts.since ? parseSince(opts.since) : undefined,
           includeApproved: opts.approved,
+          ...(opts.redact ? { redact: opts.redact } : {}),
         };
         const stats = await api.export.stats(q);
         if (opts.stats || stats.rows === 0) {

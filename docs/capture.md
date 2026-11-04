@@ -76,7 +76,7 @@ overturn capture --source zendesk --external-id zd:48213 --agent claims-reply \
 ```bash
 overturn cases list --agent claims-reply
 overturn replay --model openai/gpt-4.1-mini,together/deepseek-ai/DeepSeek-V4.1-Flash --agent claims-reply
-overturn export --format sft --agent claims-reply      # the same log, as training data
+overturn export --format sft --agent claims-reply      # the same log, as training data; identifiers redacted at the boundary
 ```
 
 The suite gates every prompt or model change; the export is the first step of [Owned models](owned-models.md).

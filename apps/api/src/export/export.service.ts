@@ -1,10 +1,18 @@
 import { Inject, Injectable } from "@nestjs/common";
 import type { Case, CaseFilter, ExportFormat, ExportQuery, ExportStats } from "@overturn-ai/shared";
-import { isToolDecision } from "@overturn-ai/shared";
+import {
+  isToolDecision,
+  parseRedactSpec,
+  projectSettingsSchema,
+  type RedactSpec,
+  redactValue,
+} from "@overturn-ai/shared";
 import type { ModelMessage } from "ai";
+import { eq } from "drizzle-orm";
 import { CasesService } from "../cases/cases.service";
 import type { Db } from "../db/client";
 import { DB } from "../db/db.module";
+import { projects } from "../db/schema";
 import { buildMessages } from "../replay/model-call";
 
 /** OpenAI chat-format message, the lingua franca of hosted fine-tuning APIs (Together, OpenAI, HF trl). */
@@ -147,15 +155,31 @@ export class ExportService {
     return { messages, chosen, rejected, ...(tools ? { tools } : {}), meta };
   }
 
+  /** The project's redaction, or the request's override. Applied to rows, never to the record. */
+  async redactSpec(projectId: string, q: ExportQuery): Promise<RedactSpec> {
+    const [p] = await this.db
+      .select({ settings: projects.settings })
+      .from(projects)
+      .where(eq(projects.id, projectId))
+      .limit(1);
+    const parsed = projectSettingsSchema.safeParse(p?.settings ?? {});
+    const fallback: RedactSpec = parsed.success
+      ? { presets: parsed.data.export.redactPresets, patterns: parsed.data.export.redactPatterns }
+      : { presets: ["email", "phone", "ssn", "card"], patterns: [] };
+    return parseRedactSpec(q.redact, fallback);
+  }
+
   async *rows(projectId: string, q: ExportQuery): AsyncGenerator<SftRow | DpoRow> {
     const list = await this.cases.findAll(projectId, this.filterOf(q));
+    const spec = await this.redactSpec(projectId, q);
     let n = 0;
     for (const c of list) {
       if (n >= q.limit) return;
       const row = this.rowFor(c, q.format, q.includeApproved);
       if (!row) continue;
       n++;
-      yield row;
+      // meta is provenance (ids), not content: it stays
+      yield { ...redactValue({ ...row, meta: undefined }, spec), meta: row.meta } as SftRow | DpoRow;
     }
   }
 

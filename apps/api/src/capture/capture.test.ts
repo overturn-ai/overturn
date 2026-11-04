@@ -292,6 +292,45 @@ describe("POST /v1/capture", () => {
     await api(ctx, "PATCH", "/v1/project", { settings: { capture: { showByExpert: false } } });
   });
 
+  it("export redacts identifiers at the boundary and leaves tone/wording cases out", async () => {
+    const dl = async (qs: string) => {
+      const res = await fetch(`${ctx.baseUrl}/v1/export?format=sft&agent=claims-reply${qs}`, {
+        headers: { authorization: `Bearer ${ctx.apiKey}` },
+      });
+      expect(res.status).toBe(200);
+      return (await res.text())
+        .trim()
+        .split("\n")
+        .filter(Boolean)
+        .map(
+          (l) => JSON.parse(l) as { messages: Array<{ content: string | null }>; meta: { caseId: string } },
+        );
+    };
+    const rows = await dl("");
+    expect(rows.length).toBeGreaterThanOrEqual(1);
+    const text = JSON.stringify(rows.map((r) => r.messages));
+    expect(text).toContain("[EMAIL]");
+    expect(text).not.toContain("dana@example.com");
+    // the record itself is untouched: the case still holds what the expert saw
+    const tone = await api<{ items: Array<{ id: string; status: string }> }>(
+      ctx,
+      "GET",
+      "/v1/cases?agent=claims-reply&status=archived",
+    );
+    expect(tone.body.items.length).toBeGreaterThanOrEqual(1);
+    expect(rows.map((r) => r.meta.caseId)).not.toContain(tone.body.items[0]!.id);
+
+    const raw = await dl("&redact=none");
+    expect(JSON.stringify(raw.map((r) => r.messages))).toContain("dana@example.com");
+
+    await api(ctx, "PATCH", "/v1/project", { settings: { export: { redactPatterns: ["HO-\\d"] } } });
+    const custom = await dl("");
+    const t2 = JSON.stringify(custom.map((r) => r.messages));
+    expect(t2).toContain("[REDACTED]");
+    expect(t2).not.toContain("HO-3");
+    await api(ctx, "PATCH", "/v1/project", { settings: { export: { redactPatterns: [] } } });
+  });
+
   it("rejects a capture without a draft", async () => {
     const res = await api(ctx, "POST", "/v1/capture", { externalId: "zd:1", sent: { text: "x" } });
     expect(res.status).toBe(400);
