@@ -1,9 +1,9 @@
 ---
-title: Capture where the expert works
-description: The Zendesk app and POST /v1/capture turn what the expert sent, versus what the AI drafted, into a case. No SDK in the way.
+title: Capture in the help desk
+description: The Zendesk app and POST /v1/capture turn what the agent sent, versus what the AI drafted, into a scored case. No SDK in the way, any drafting vendor.
 ---
 
-The corrections that matter are made by senior people inside the tool they already use: an adjuster rewriting the AI's coverage letter in Zendesk, a reviewer changing a reserve, a specialist rejecting a draft decision. Those fixes usually vanish into the ticket. Capture keeps them: what the AI (or the junior) produced, what the expert changed it to, and one line on why. Each one is a replayable case from that moment, and training data for the model you will own.
+Your agents already review every AI draft before it goes out, in the reply box, and the fix vanishes into the ticket. Capture keeps it: what the AI (or the junior) drafted, what the agent sent, and the reason in one click. That is the QA record for AI drafts: the untouched rate and the fixes by reason on the Capture page, and a replayable case for every fix, whichever vendor wrote the draft. In claims, an adjuster changing a coverage decision or a reserve is the same capture with decision fields scored exactly.
 
 Nothing has to be instrumented. If the drafting agent did record its run with the SDK, the correction attaches to that run; if not, the draft becomes the recorded run.
 

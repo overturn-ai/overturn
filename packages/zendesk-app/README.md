@@ -1,6 +1,6 @@
 # Overturn for Zendesk
 
-A ticket-sidebar app that captures the correction where the expert already works. It watches the reply box for the AI draft, diffs it against what the agent actually sends, asks for a one-line reason, and posts the result to `POST /v1/capture`. The draft becomes a recorded run, the difference becomes a case, and the suite replays it against any model before the next prompt or model change. The drafting agent never has to be instrumented.
+QA for AI-drafted replies, in the ticket sidebar. It watches the reply box for the AI draft, diffs it against what the agent actually sends, asks for a one-line reason, and posts the result to `POST /v1/capture`. The draft becomes a recorded run, the difference becomes a case, and the suite replays it against any model before the next prompt or model change. The drafting agent never has to be instrumented, and it does not matter who wrote the draft: Zendesk's AI agents, a Salesforce bot, a homegrown drafter or a macro. The support lead gets the untouched rate and the fixes by reason, by team and by week, on the Capture page.
 
 ## What the agent sees
 
@@ -40,3 +40,7 @@ pnpm --filter @overturn-ai/zendesk-app build
 ```
 
 `src/capture.ts` is the logic (pure, tested); `src/main.ts` is the ZAF glue; `app/` is the manifest, iframe and translations.
+
+## Marketplace listing
+
+The app ships today as a private app (`"private": true`, uploaded per account). The marketplace submission uses the same zip with `"private": false` and the listing copy in [`docs/zendesk-marketplace.md`](../../docs/zendesk-marketplace.md); submission goes through the Zendesk partner account.

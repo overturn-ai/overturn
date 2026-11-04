@@ -1,9 +1,9 @@
 ---
 title: Overturn
-description: Every human correction of an AI agent becomes a replayable regression test.
+description: QA for AI-drafted replies — captured in the help desk, scored by team, replayed before every model change.
 ---
 
-Overturn records your agent's runs, turns every human correction into a replayable case, and replays those cases against any model or prompt with tools answered from the recording, so nothing fires twice. Open source, Apache-2.0, self-hosted on one Postgres or hosted at [app.overturn.run](https://app.overturn.run).
+Overturn is QA for AI-drafted replies. The [Zendesk app](/docs/capture/) records what the AI drafted, what the agent sent and why, whichever vendor wrote the draft; the scorecard says how often the draft was right, by team and by week; and every fix replays as a regression test against any model or prompt, with tools answered from the recording so nothing fires twice. Engineers get the same loop from the SDK. Open source, Apache-2.0, self-hosted on one Postgres or hosted at [app.overturn.run](https://app.overturn.run).
 
 ![Record a run, correct a step, get a case, replay it against another model, read the report](/loop.gif)
 
@@ -17,7 +17,7 @@ Overturn records your agent's runs, turns every human correction into a replayab
 
 ## Where to start
 
-- Your experts work in Zendesk: [Capture](/docs/capture/), no code.
+- Your agents review AI drafts in Zendesk: [Capture](/docs/capture/), no code.
 - Hosted and want to see it in ten minutes: [Hosted app](/docs/hosted/).
 - Running your own: [Quickstart](/docs/quickstart/) and [Self-hosting](/docs/self-hosting/).
 - Already recording: [SDK & CLI](/docs/sdk/).

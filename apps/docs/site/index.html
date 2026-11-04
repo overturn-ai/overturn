@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Overturn — The system of record for how your company corrects AI</title>
-<meta name="description" content="Your experts already fix the AI's work. Overturn captures every fix where it happens, replays it as a test before any model or prompt change, and trains a model you own on it. Open source.">
+<title>Overturn — QA for AI-drafted replies</title>
+<meta name="description" content="Your support agents already review every AI draft. Overturn records what the AI wrote, what the agent sent and why, scores the AI by team and week, and replays every fix as a test before the next model or prompt change. Zendesk app, any drafting vendor. Open source.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/media/apple-touch-icon.png">
-<meta property="og:title" content="Overturn — Your AI Agent Never Makes the Same Mistake Twice">
-<meta property="og:description" content="Your experts already fix the AI's work. Overturn captures every fix where it happens, replays it as a test before any model or prompt change, and trains a model you own on it. Open source.">
+<meta property="og:title" content="Overturn — QA for AI-drafted replies">
+<meta property="og:description" content="Your support agents already review every AI draft. Overturn records what the AI wrote, what the agent sent and why, scores the AI by team and week, and replays every fix as a test before the next model or prompt change. Zendesk app, any drafting vendor. Open source.">
 <meta name="twitter:card" content="summary_large_image">
 <meta property="og:image" content="https://docs.overturn.run/media/og.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -333,14 +333,14 @@
 <main class="wrap">
 <div class="hero">
   <div>
-    <div class="pill">Open beta · Apache-2.0 · insurance claims first</div>
-    <h1>Your experts fix the AI every day. Overturn keeps every&nbsp;fix.</h1>
-    <p class="lede">When an adjuster rewrites the AI's coverage letter in Zendesk, <b>Overturn</b> captures what the AI drafted, what the expert sent and why. Each fix is a test when you run the agent, and a record either way: who changed what, and why, kept where compliance can find it. Juniors and agents handle more cases on their own; your experts only see the new ones.</p>
-    <p class="sor">Overturn is the system of record for how your company corrects&nbsp;AI.</p>
+    <div class="pill">Open beta · Apache-2.0 · Zendesk app · Salesforce next</div>
+    <h1>Quality control for AI-drafted&nbsp;replies.</h1>
+    <p class="lede">Your agents already review every AI draft before it goes out. <b>Overturn</b>, installed from the Zendesk marketplace, records what the AI wrote, what the agent sent and why it changed. You get the number nobody has today: how often the draft was right, by team and by week, with the reasons it was not. Every fix becomes a test that runs before the next model or prompt change, so the AI does not make the same mistake twice. Works with any drafting tool: Zendesk's, Salesforce's, or your own.</p>
+    <p class="sor">Overturn is QA for AI-drafted replies: any help desk, any vendor, checked before the change&nbsp;ships.</p>
     <div class="install"><div class="cmd"><span class="logos"><span style="background:#111">TS</span><span style="background:#3572a5">Py</span><span style="background:#f5a623">OT</span></span><code id="cmd">npm i @overturn-ai/sdk</code></div><button type="button" aria-label="Copy" data-copy="cmd"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button></div>
-    <div class="ctas"><a class="btn primary" href="https://app.overturn.run/login">Start free</a><a class="btn" href="/docs/capture/">Zendesk app · no code</a><a class="btn" href="/docs/quickstart/">Read the docs</a></div>
-    <div class="stats"><div class="cap">What one week of captured fixes buys.</div><div class="row">
-      <div><div class="n">25</div><div class="l">expert fixes captured where they happened</div></div>
+    <div class="ctas"><a class="btn primary" href="/docs/capture/">Install the Zendesk app</a><a class="btn" href="https://app.overturn.run/login">Start free</a><a class="btn" href="/docs/quickstart/">Read the docs</a></div>
+    <div class="stats"><div class="cap">What one week of reviewed drafts tells you.</div><div class="row">
+      <div><div class="n">25</div><div class="l">drafts changed by agents, each with the reason</div></div>
       <div><div class="n">2</div><div class="l">regressions caught before the model change</div></div>
       <div><div class="n">$0.03</div><div class="l">to replay all of them on a cheaper model</div></div>
     </div></div>
@@ -451,12 +451,12 @@
 <section id="product" class="band">
   <div class="flow">
     <div>
-      <h2>From an expert's fix<br>to a model that remembers it.</h2>
+      <h2>From an agent's fix<br>to a test that runs before every change.</h2>
       <div class="fsteps" id="fsteps">
-        <div class="fstep on" data-i="0"><h3>Record</h3><p>The Zendesk app records the AI draft and the thread the expert saw; or wrap the model client you already have and every prompt, tool call and answer is recorded with a fingerprint.</p></div>
-        <div class="fstep" data-i="1"><h3>Correct</h3><p>The expert sends the reply, rewrites the decision, or rejects it, in the tool they already use. The case freezes with the AI's original output, the expert's fix, and one line on why.</p></div>
+        <div class="fstep on" data-i="0"><h3>Record</h3><p>The Zendesk app records the AI draft and the thread the agent saw; or wrap the model client you already have and every prompt, tool call and answer is recorded with a fingerprint.</p></div>
+        <div class="fstep" data-i="1"><h3>Correct</h3><p>The agent sends the reply as drafted, or changes it and picks a reason in one click, in the help desk they already use. The case freezes with the AI's draft, the agent's fix, and the reason.</p></div>
         <div class="fstep" data-i="2"><h3>Replay</h3><p>Run every case against a new model or prompt from the CLI, the app, or CI. Tools are answered from the recording; nothing fires twice.</p></div>
-        <div class="fstep" data-i="3"><h3>Report, then train</h3><p>Regressions first, with the baseline beside the new answer. The same log trains an open model you own; it is promoted only when it passes the suite, and shadows production first.</p></div>
+        <div class="fstep" data-i="3"><h3>Report, then train</h3><p>Regressions first, with the baseline beside the new answer, and the weekly scorecard: untouched rate, fixes by reason, time to send. The same log can train an open model you own, promoted only when it passes the suite.</p></div>
       </div>
     </div>
     <div class="fpanel" id="fpanel">
@@ -526,7 +526,7 @@
   <h2 style="margin-bottom:40px">What Overturn handles</h2>
   <div class="feat">
     <div><h4>Capture at the point of fix</h4><p>No one opens another dashboard. The Zendesk app diffs the AI draft against what the expert sent and asks for one line on why; Slack, <code>&lt;CorrectButton&gt;</code> and <code>/v1/capture</code> cover everything else. The fix is recorded with the reason attached.</p></div>
-    <div><h4>The correction is the record</h4><p>Not a score on a trace. Every approve, edit, reject or escalate is stored as the agent's answer, the human's fix, the reason and who made it, and becomes a case automatically.</p></div>
+    <div><h4>The AI draft scorecard</h4><p>Untouched rate, fixes by reason, time to send: the QA numbers a support lead already reports, for AI drafts, by team and by week. Never a per-agent rate. The correction record and the regression suite come with it.</p></div>
     <div><h4>Safe replay</h4><p>Tool calls are matched to recordings by fingerprint, so a model that takes a different path still gets the right answers. Nothing is emailed, refunded or written twice.</p></div>
     <div><h4>Can a cheaper model do the job?</h4><p>Replay the same suite against several models at once and read them side by side: pass rate, regressions and cost per run, scored on your team's own corrections.</p></div>
     <div><h4>A model you own</h4><p>Export every correction as SFT or DPO JSONL, fine-tune an open model on Together or in your own cloud, gate it against the suite, shadow it on live traffic, promote it by hand. Or pull the closest fixes into your prompt with <code>ov.examples()</code> today.</p></div>
@@ -555,10 +555,10 @@
 
 <section id="next" class="band">
   <div class="next">
-    <div class="pill">Design partners · insurance claims</div>
-    <h2>Your experts' judgment, compounding in a model you control.</h2>
-    <p>Senior adjusters, underwriters and reviewers already fix the AI's first pass; the fixes disappear into tickets. With Overturn in the inbox, every fix is a test and a training row. The model learns the team's decisions, juniors and agents handle more cases unaided, experts see only the new edge cases, and those get captured too. We're working with a small number of claims teams on Zendesk first. If that's you, write to us.</p>
-    <a class="btn primary" href="mailto:shireen@overturn.run?subject=Claims%20design%20partner">Talk to us about your claims team</a>
+    <div class="pill">Design partners · support and ops teams</div>
+    <h2>Any team that sends AI drafts. Insurance claims is where we started.</h2>
+    <p>Our first teams are claims desks: an adjuster changing a coverage decision or a reserve is the hardest case for AI QA, with the most at stake, and the reason picker ships with a claims pack. The same loop runs for customer support, billing, field service and compliance review, on any AI that drafts into Zendesk, and Salesforce Service Cloud next. We are taking a small number of design partners on Zendesk now. If your agents review AI drafts and you have no number for how often the draft is right, write to us.</p>
+    <a class="btn primary" href="mailto:shireen@overturn.run?subject=Overturn%20design%20partner">Talk to us about your team</a>
   </div>
 </section>
 
@@ -575,10 +575,10 @@
   <div class="faq">
     <h2>Frequently<br>asked questions</h2>
     <div>
-      <details><summary><span class="i">01</span>Who is this for?<span class="ch">⌄</span></summary><div class="a">Teams whose expensive experts check and fix AI (or junior) first-pass work: claims adjusters, underwriters, compliance reviewers, field technicians. If the fixes are disappearing into tickets and you are paying a frontier lab for work your team already knows how to do, this is for you. Engineers get the same thing as an open-source SDK.</div></details>
+      <details><summary><span class="i">01</span>Who is this for?<span class="ch">⌄</span></summary><div class="a">Support and ops teams whose agents review AI-drafted replies before sending: customer support, claims, billing, field service, compliance review. If AI drafts into your Zendesk or Salesforce and nobody can say how often the draft was right, this is for you. Engineers get the same thing as an open-source SDK.</div></details>
       <details><summary><span class="i">02</span>What do I send?<span class="ch">⌄</span></summary><div class="a">From Zendesk, nothing: the app captures the draft, the thread, what was sent and the reason. From code, runs: the input, every prompt and model answer, every tool call with its result, and the final output. OpenTelemetry users send the spans they already have.</div></details>
       <details><summary><span class="i">03</span>What comes back?<span class="ch">⌄</span></summary><div class="a">A report per replay: regressions first (approved cases that now fail), then fixed cases, then still-wrong ones, each with the baseline, the new answer and the human's decision side by side, plus a receipt listing exactly which tool calls were answered from the recording.</div></details>
-      <details><summary><span class="i">04</span>How is this different from Braintrust or LangSmith?<span class="ch">⌄</span></summary><div class="a">Eval tools start from traces and need an engineer to write the test set. Overturn starts from the correction itself: the moment an expert rewrites the answer in the tool they already use. The correction (wrong output, fixed output, reason, model and prompt version) is the stored object; tests, exports and the model you own are built on that log. You can export the same cases as JSONL and keep using your eval tool; Overturn is the system of record for the fixes.</div></details>
+      <details><summary><span class="i">04</span>How is this different from Zendesk QA, Braintrust or LangSmith?<span class="ch">⌄</span></summary><div class="a">Zendesk QA scores conversations after the fact, inside Zendesk, and now auto-scores Zendesk's own AI agents. Overturn is neutral: it captures the correction at the moment of send, whichever vendor drafted the reply and whichever help desk it lives in, and turns each fix into a test that runs <em>before</em> the next model or prompt change, not a score after it. Eval tools like Braintrust and LangSmith start from traces and need an engineer to write the test set; Overturn starts from the agent's fix. You can export the same cases as JSONL and keep using either.</div></details>
       <details><summary><span class="i">05</span>Does the model really learn how my experts decide?<span class="ch">⌄</span></summary><div class="a">It reflects the decisions your experts already made: house rules, thresholds, wording, which cases get escalated. It does not learn underwriting. That is why the model and the suite ship together: nothing is promoted that fails the replay of your own experts' fixes, and it shadows production before it serves anything.</div></details>
       <details><summary><span class="i">06</span>What happens to tools with side effects?<span class="ch">⌄</span></summary><div class="a">They're answered from the recording when the call matches a recorded fingerprint, and refused when it doesn't. Nothing is emailed, refunded or written during a replay. The receipt says which calls were refused so you can tell what wasn't tested.</div></details>
       <details><summary><span class="i">07</span>Which models and frameworks?<span class="ch">⌄</span></summary><div class="a">Recording: OpenAI, Anthropic and the Vercel AI SDK in TypeScript; OpenAI and Anthropic in Python; anything that emits OpenTelemetry gen_ai spans. Replay: OpenAI, Anthropic, Google, OpenRouter, or any OpenAI-compatible endpoint, including local models.</div></details>
@@ -590,7 +590,7 @@
 
 <div class="cta">
   <h2>Start with one inbox</h2>
-  <p>Install the Zendesk app, send one reply, and watch the first fix become a case. Engineers: wrap the client you already have; ten minutes end to end with the example agent.</p>
+  <p>Install the Zendesk app, send one reply, and watch the first fix become a QA case with its reason. Engineers: wrap the client you already have; ten minutes end to end with the example agent.</p>
   <div class="ctas" style="justify-content:center;margin:0"><a class="btn primary" href="https://app.overturn.run/login">Start free</a><a class="btn" href="https://github.com/overturn-ai/overturn">GitHub</a></div>
 </div>
 </main>

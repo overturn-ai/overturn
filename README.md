@@ -10,11 +10,11 @@
 
 [Site](https://overturn.run) · [Docs](https://docs.overturn.run) · [Wiki](https://github.com/overturn-ai/overturn/wiki) · [Discussions](https://github.com/overturn-ai/overturn/discussions) · [Hosted app](https://app.overturn.run) · [Contributing](CONTRIBUTING.md)
 
-**Overturn captures corrections where the expert already works (Zendesk, your own UI, the SDK), not in an annotation queue they have to visit.**
+**Overturn is QA for AI-drafted replies. It records what the AI wrote, what your agent sent and why, in the help desk they already use (Zendesk now, Salesforce Service Cloud next), and runs every fix as a test before the next model or prompt change.**
 
-It is the system of record for how your company corrects AI: when an adjuster rewrites an AI draft, reverses a decision or changes a reserve, Overturn keeps what the AI produced, what the expert changed it to, and why. When you run the agent yourself, each fix is a regression test that runs before any model or prompt change; either way it is a record that ops and compliance own, and training data for a model you run yourself. Open source, Apache-2.0, self-hosted on one Postgres down to the model calls.
+Support teams already have a QA budget line and a QA habit; AI drafts broke the loop because the review happens in the reply box and the fix disappears into the ticket. Overturn's Zendesk app watches the reply box, diffs the AI draft against what was sent, asks for a one-click reason, and gives the support lead the number nobody has today: how often the draft was right, by team and by week, with the reasons it was not. Neutral across vendors: it works whether Zendesk, Salesforce, or your own agent wrote the draft. The correction record, the regression suite and the training data for a model you own come as by-products. Open source, Apache-2.0, self-hosted on one Postgres down to the model calls.
 
-Claims teams first: a claims adjuster's corrections (coverage, reserve, denial reason, the reply itself) are structured enough to score exactly, frequent enough to compound, and worth keeping for compliance on their own. The same loop works for underwriting, field service and compliance review.
+Insurance claims is the case study, not a gate: an adjuster changing a coverage decision or a reserve is the hardest version of the problem, so the reason picker ships with a claims pack and decision fields are scored exactly. The same loop runs for customer support, billing, field service and compliance review.
 
 ![Record a run, correct a step, get a case, replay it against another model, read the report](docs/assets/loop.gif)
 
