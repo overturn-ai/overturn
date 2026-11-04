@@ -200,6 +200,55 @@ describe("POST /v1/capture", () => {
     expect(b.body.case?.id).toBe(a.body.case?.id);
   });
 
+  it("a reason code is kept, counted, and tone/wording never enters the suite", async () => {
+    const res = await api<CaptureResult>(ctx, "POST", "/v1/capture", {
+      source: "zendesk",
+      externalId: "zd:tone",
+      agent: "claims-reply",
+      actor: "ray@carrier.com",
+      context: thread,
+      draft: { text: draft },
+      sent: { text: `${draft} Kind regards, Ray.` },
+      reasonCode: "tone_wording",
+      reason: "sign-off",
+    });
+    expect(res.status).toBe(201);
+    expect(res.body.correction.reasonCode).toBe("tone_wording");
+    expect(res.body.case?.status).toBe("archived");
+
+    const kept = await api<CaptureResult>(ctx, "POST", "/v1/capture", {
+      source: "zendesk",
+      externalId: "zd:reserve",
+      agent: "coverage-decision",
+      context: thread,
+      draft: { text: draft, fields: { reserve: 4000 } },
+      sent: { text: draft, fields: { reserve: 9000 } },
+      reasonCode: "reserve_too_low",
+    });
+    expect(kept.body.case?.status).toBe("active");
+
+    const bad = await api(ctx, "POST", "/v1/capture", {
+      externalId: "zd:x",
+      draft: { text: "a" },
+      sent: { text: "b" },
+      reasonCode: "Tone Wording",
+    });
+    expect(bad.status).toBe(400);
+
+    const stats = await api<import("@overturn-ai/shared").CaptureStats>(
+      ctx,
+      "GET",
+      "/v1/capture/stats?days=30",
+    );
+    const tone = stats.body.byReason.find((r) => r.reason === "tone_wording");
+    expect(tone).toMatchObject({ label: "Tone / wording", excluded: true });
+    expect(tone?.count).toBeGreaterThanOrEqual(1);
+    expect(stats.body.byReason.find((r) => r.reason === "reserve_too_low")).toMatchObject({
+      label: "Reserve too low",
+      excluded: false,
+    });
+  });
+
   it("rejects a capture without a draft", async () => {
     const res = await api(ctx, "POST", "/v1/capture", { externalId: "zd:1", sent: { text: "x" } });
     expect(res.status).toBe(400);
@@ -220,7 +269,9 @@ describe("GET /v1/capture/stats", () => {
     expect(s.untouchedRate).toBeCloseTo(s.untouched / s.captures, 5);
     expect(s.experts).toBeGreaterThanOrEqual(1);
     const ray = s.byActor.find((a) => a.actor === "ray@carrier.com");
-    expect(ray).toMatchObject({ captures: 1, edited: 1, untouchedRate: 0 });
+    expect(ray).toBeDefined();
+    expect(ray?.edited).toBe(ray?.captures);
+    expect(ray?.untouchedRate).toBe(0);
     expect(s.byReason.map((r) => r.reason)).toContain("storm claims get 2-day contact; ask to keep evidence");
     expect(s.bySource.find((x) => x.source === "zendesk")?.count).toBeGreaterThanOrEqual(3);
     expect(s.bySource.find((x) => x.source === "front")?.count).toBe(1);
@@ -233,7 +284,7 @@ describe("GET /v1/capture/stats", () => {
       "GET",
       "/v1/capture/stats?days=30&agent=coverage-decision",
     );
-    expect(filtered.body.captures).toBe(1);
-    expect(filtered.body.edited).toBe(1);
+    expect(filtered.body.captures).toBe(2);
+    expect(filtered.body.edited).toBe(2);
   });
 });

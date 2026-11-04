@@ -8,6 +8,7 @@ import {
   expectedFor,
   extractAnswer,
   type FrozenInput,
+  SUITE_EXCLUDED_REASON_CODES,
   suggestSubject,
   type ToolRecordingEntry,
 } from "@overturn-ai/shared";
@@ -32,6 +33,7 @@ export function serializeCorrection(r: CorrectionRow): Correction {
     kind: r.kind,
     correctedOutput: r.correctedOutput,
     note: r.note,
+    reasonCode: r.reasonCode,
     actor: r.actor,
     source: r.source,
     createdAt: r.createdAt.toISOString(),
@@ -141,6 +143,7 @@ export class CorrectionsService {
             kind: input.kind,
             correctedOutput: input.correctedOutput ?? null,
             note: input.note ?? null,
+            reasonCode: input.reasonCode ?? null,
             actor: input.actor ?? null,
             source: input.source,
           })
@@ -228,6 +231,11 @@ export class CorrectionsService {
             contract: input.contract ?? [],
             recordedModel: step.model,
             inputHash: caseInputHash(run.agent, frozen.input),
+            // A tone/wording fix is evidence, not a rule: kept, never replayed, never exported.
+            status:
+              input.reasonCode && SUITE_EXCLUDED_REASON_CODES.includes(input.reasonCode)
+                ? "archived"
+                : "active",
           })
           .returning();
         return { correction: serializeCorrection(corr!), caseId: c!.id, deduplicated: false };

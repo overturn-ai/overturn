@@ -188,6 +188,7 @@ class Overturn:
         context: list[dict[str, Any]] | None = None,
         subject: str | None = None,
         reason: str | None = None,
+        reason_code: str | None = None,
         actor: str | None = None,
         draft_model: str | None = None,
         draft_provider: str | None = None,
@@ -215,6 +216,7 @@ class Overturn:
         for key, value in (
             ("subject", subject),
             ("reason", reason),
+            ("reasonCode", reason_code),
             ("actor", actor),
             ("draftModel", draft_model),
             ("draftProvider", draft_provider),

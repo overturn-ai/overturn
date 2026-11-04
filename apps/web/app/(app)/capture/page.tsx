@@ -175,7 +175,12 @@ export default function CapturePage() {
               <TBody>
                 {(s?.byReason ?? []).map((r) => (
                   <TR key={r.reason}>
-                    <TD>{r.reason}</TD>
+                    <TD>
+                      {r.label}
+                      {r.excluded ? (
+                        <span className="ml-2 text-xs text-muted-foreground">kept, not in the suite</span>
+                      ) : null}
+                    </TD>
                     <TD className="text-right tabular-nums">{r.count}</TD>
                   </TR>
                 ))}

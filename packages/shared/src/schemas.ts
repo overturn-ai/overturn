@@ -331,12 +331,24 @@ export type Contract = z.infer<typeof contractSchema>;
 
 // ---------- corrections ----------
 
+/**
+ * Why the expert changed it, as a code the scorecard can count. The claims pack ships eight;
+ * any snake_case code is accepted so other packs can add their own.
+ */
+export const reasonCodeSchema = z
+  .string()
+  .min(1)
+  .max(64)
+  .regex(/^[a-z][a-z0-9_]*$/, "reason codes are snake_case");
+export type ReasonCode = z.infer<typeof reasonCodeSchema>;
+
 export const correctionCreateSchema = z.object({
   runId: uuidSchema,
   stepId: uuidSchema.nullish(),
   kind: correctionKindSchema,
   correctedOutput: jsonValueSchema.optional(),
   note: z.string().max(10_000).nullish(),
+  reasonCode: reasonCodeSchema.nullish(),
   actor: z.string().max(200).nullish(),
   source: correctionSourceSchema.default("api"),
   /** Override the scorer the case gets; omitted = chosen from the shape of the expected answer. */
@@ -355,6 +367,7 @@ export const correctionSchema = z.object({
   kind: correctionKindSchema,
   correctedOutput: jsonValueSchema.nullable(),
   note: z.string().nullable(),
+  reasonCode: z.string().nullable(),
   actor: z.string().nullable(),
   source: correctionSourceSchema,
   createdAt: isoDateSchema,
@@ -573,6 +586,8 @@ export const captureCreateSchema = z.object({
   sent: captureAnswerSchema,
   /** One line from the expert on why. Optional, but it becomes the case's title and the judge's rubric. */
   reason: z.string().max(10_000).nullish(),
+  /** Why, as a code (claims pack: wrong_coverage_decision, reserve_too_low, tone_wording, ...). */
+  reasonCode: reasonCodeSchema.nullish(),
   /** Which model wrote the draft, when known. */
   draftModel: z.string().max(200).nullish(),
   draftProvider: z.string().max(100).nullish(),
@@ -622,7 +637,10 @@ export const captureStatsSchema = z.object({
       untouchedRate: z.number(),
     }),
   ),
-  byReason: z.array(z.object({ reason: z.string(), count: z.number().int() })),
+  /** Grouped by reasonCode when present, else by the note. `excluded` counts the ones kept out of the suite. */
+  byReason: z.array(
+    z.object({ reason: z.string(), label: z.string(), count: z.number().int(), excluded: z.boolean() }),
+  ),
   bySource: z.array(z.object({ source: z.string(), count: z.number().int() })),
   byAgent: z.array(z.object({ agent: z.string(), captures: z.number().int(), edited: z.number().int() })),
   weekly: z.array(

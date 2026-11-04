@@ -44,8 +44,8 @@
       "name": "require_reason",
       "type": "checkbox",
       "required": false,
-      "default": false,
-      "helpText": "Block the send until the agent gives a one-line reason when they changed the draft."
+      "default": true,
+      "helpText": "Block the send until the agent picks a reason (one click) when they changed the draft. On by default: a changed decision without a reason is not a test."
     },
     {
       "name": "capture_internal_notes",

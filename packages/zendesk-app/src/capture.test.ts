@@ -51,8 +51,9 @@ describe("settings", () => {
     ]);
     expect(s.minDraftChars).toBe(120);
   });
-  it("falls back to defaults", () => {
+  it("falls back to defaults, with require_reason on", () => {
     expect(settingsFrom({})).toEqual(DEFAULT_SETTINGS);
+    expect(settingsFrom({ require_reason: "false" }).requireReason).toBe(false);
   });
 });
 
@@ -105,9 +106,11 @@ describe("decideOnSend", () => {
     ticket,
     draft,
     draftFields: {},
+    reasonCode: null as string | null,
     reason: "",
     actor: "ray@carrier.com",
-    settings: DEFAULT_SETTINGS,
+    // The claims pack requires a reason by default; most cases here test the capture shape, so relax it.
+    settings: { ...DEFAULT_SETTINGS, requireReason: false },
   };
 
   it("skips without a draft, on internal notes, and on empty sends", () => {
@@ -140,6 +143,7 @@ describe("decideOnSend", () => {
     const sent = draftText.replace("5 business days", "2 business days");
     const d = decideOnSend({
       ...base,
+      reasonCode: "wrong_amount_or_date",
       reason: "Storm SLA is 2 days",
       send: { text: sent, type: "publicReply", fields: {} },
     });
@@ -147,12 +151,14 @@ describe("decideOnSend", () => {
     if (d.action !== "capture") return;
     expect(d.changed).toBe(true);
     expect(d.body.reason).toBe("Storm SLA is 2 days");
+    expect(d.body.reasonCode).toBe("wrong_amount_or_date");
     expect(d.body.sent.text).toContain("2 business days");
     expect(d.body.sent.fields).toBeUndefined();
   });
 
-  it("require_reason blocks a changed send until there is a reason", () => {
-    const settings = { ...DEFAULT_SETTINGS, requireReason: true };
+  it("require_reason (the default) blocks a changed send until a reason code is picked; a note alone is not enough", () => {
+    expect(DEFAULT_SETTINGS.requireReason).toBe(true);
+    const settings = DEFAULT_SETTINGS;
     const sent = draftText.replace("covered", "not covered");
     const blocked = decideOnSend({
       ...base,
@@ -160,13 +166,21 @@ describe("decideOnSend", () => {
       send: { text: sent, type: "publicReply", fields: {} },
     });
     expect(blocked).toEqual({ action: "need-reason", changedFields: [] });
-    const ok = decideOnSend({
+    const noteOnly = decideOnSend({
       ...base,
       settings,
       reason: "exclusion",
       send: { text: sent, type: "publicReply", fields: {} },
     });
+    expect(noteOnly.action).toBe("need-reason");
+    const ok = decideOnSend({
+      ...base,
+      settings,
+      reasonCode: "missed_exclusion",
+      send: { text: sent, type: "publicReply", fields: {} },
+    });
     expect(ok.action).toBe("capture");
+    if (ok.action === "capture") expect(ok.body.reasonCode).toBe("missed_exclusion");
     const unchanged = decideOnSend({
       ...base,
       settings,
@@ -180,6 +194,7 @@ describe("decideOnSend", () => {
     const d = decideOnSend({
       ...base,
       settings,
+      reasonCode: "wrong_coverage_decision",
       draftFields: { status: "covered" },
       send: { text: draftText, type: "publicReply", fields: { status: "denied" } },
     });

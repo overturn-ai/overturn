@@ -22,6 +22,10 @@ export function registerCapture(program: Command): void {
     .option("--agent <name>", "Workflow, one suite per agent", "reply")
     .option("--source <name>", "zendesk | front | intercom | gmail | salesforce | custom", "custom")
     .option("--reason <text>", "One line on why it changed")
+    .option(
+      "--reason-code <code>",
+      "Why, as a code: wrong_coverage_decision, missed_exclusion, reserve_too_low, reserve_too_high, wrong_amount_or_date, missing_required_step, tone_wording, policy_exception",
+    )
     .option("--actor <who>", "The expert, e.g. their email")
     .option("--subject <text>", "Thread subject")
     .option("--context <file>", "JSON file: [{role, author?, content, at?}] oldest first")
@@ -38,6 +42,7 @@ export function registerCapture(program: Command): void {
           agent: string;
           source: string;
           reason?: string;
+          reasonCode?: string;
           actor?: string;
           subject?: string;
           context?: string;
@@ -56,6 +61,7 @@ export function registerCapture(program: Command): void {
           actor: opts.actor,
           subject: opts.subject,
           reason: opts.reason,
+          reasonCode: opts.reasonCode,
           draftModel: opts.draftModel,
           url: opts.url,
           context: opts.context ? JSON.parse(readFileSync(opts.context, "utf8")) : [],

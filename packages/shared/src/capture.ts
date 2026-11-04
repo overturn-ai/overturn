@@ -78,3 +78,23 @@ export function renderCaptureContext(
 export function captureSystemPrompt(agent: string, source: string): string {
   return `You are drafting the next reply for the "${agent}" workflow in ${source}. Answer the thread below as the expert on this team would: accurate, complete, and in the team's voice. When decision fields are listed, return the reply text and the decided values.`;
 }
+
+/** The claims pack: why an adjuster changed a draft, as codes the scorecard counts. */
+export const CLAIMS_REASON_CODES = [
+  { code: "wrong_coverage_decision", label: "Wrong coverage decision" },
+  { code: "missed_exclusion", label: "Missed exclusion" },
+  { code: "reserve_too_low", label: "Reserve too low" },
+  { code: "reserve_too_high", label: "Reserve too high" },
+  { code: "wrong_amount_or_date", label: "Wrong amount or date" },
+  { code: "missing_required_step", label: "Missing required step" },
+  { code: "tone_wording", label: "Tone / wording" },
+  { code: "policy_exception", label: "Policy exception" },
+] as const;
+
+/** Corrections with these codes are kept as evidence but never enter the suite or the export. */
+export const SUITE_EXCLUDED_REASON_CODES: readonly string[] = ["tone_wording"];
+
+export function reasonCodeLabel(code: string | null | undefined): string | null {
+  if (!code) return null;
+  return CLAIMS_REASON_CODES.find((c) => c.code === code)?.label ?? code.replace(/_/g, " ");
+}

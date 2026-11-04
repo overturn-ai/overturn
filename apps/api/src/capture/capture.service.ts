@@ -8,7 +8,9 @@ import {
   captureSystemPrompt,
   diffCaptureAnswers,
   extractAnswer,
+  reasonCodeLabel,
   renderCaptureContext,
+  SUITE_EXCLUDED_REASON_CODES,
 } from "@overturn-ai/shared";
 import { and, asc, desc, eq, gte, sql } from "drizzle-orm";
 import { v7 as uuidv7 } from "uuid";
@@ -46,6 +48,7 @@ export class CaptureService {
       kind,
       correctedOutput: diff.changed ? sentValue : undefined,
       note: input.reason ?? null,
+      reasonCode: input.reasonCode ?? null,
       actor: input.actor ?? null,
       source: "capture",
     });
@@ -91,15 +94,27 @@ export class CaptureService {
       .groupBy(corrections.actor)
       .orderBy(desc(count))
       .limit(50);
-    const reason = sql<string>`lower(trim(${corrections.note}))`;
-    const byReason = await this.db
+    // The code when the expert picked one, else the note: a team on the picker gets a clean table.
+    const reason = sql<string>`coalesce(${corrections.reasonCode}, lower(trim(${corrections.note})))`;
+    const byReasonRows = await this.db
       .select({ reason, count })
       .from(corrections)
       .innerJoin(runs, eq(runs.id, corrections.runId))
-      .where(and(...where, sql`${corrections.note} is not null and trim(${corrections.note}) <> ''`))
+      .where(
+        and(
+          ...where,
+          sql`(${corrections.reasonCode} is not null or (${corrections.note} is not null and trim(${corrections.note}) <> ''))`,
+        ),
+      )
       .groupBy(reason)
       .orderBy(desc(count))
       .limit(15);
+    const byReason = byReasonRows.map((r) => ({
+      reason: r.reason,
+      label: reasonCodeLabel(r.reason) ?? r.reason,
+      count: r.count,
+      excluded: SUITE_EXCLUDED_REASON_CODES.includes(r.reason),
+    }));
     const source = sql<string>`coalesce(${runs.metadata} ->> 'capture', 'custom')`;
     const bySource = await this.db
       .select({ source, count })

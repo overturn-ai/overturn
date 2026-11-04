@@ -1,5 +1,5 @@
 import type { CaptureAnswer, CaptureCreate, CaptureMessage } from "@overturn-ai/shared";
-import { diffCaptureAnswers, normalizeCaptureText } from "@overturn-ai/shared/capture";
+import { CLAIMS_REASON_CODES, diffCaptureAnswers, normalizeCaptureText } from "@overturn-ai/shared/capture";
 
 /** What the app knows about the ticket, read through ZAF. */
 export interface TicketSnapshot {
@@ -25,7 +25,7 @@ export interface TicketSnapshot {
 export interface AppSettings {
   baseUrl: string;
   agent: string;
-  /** Block the send until the agent types a reason when the reply was changed. */
+  /** Block the send until the agent picks a reason when the reply was changed (claims pack default). */
   requireReason: boolean;
   /** Also capture internal notes, not only public replies. */
   captureInternalNotes: boolean;
@@ -38,7 +38,7 @@ export interface AppSettings {
 export const DEFAULT_SETTINGS: AppSettings = {
   baseUrl: "https://api.overturn.run",
   agent: "claims-reply",
-  requireReason: false,
+  requireReason: true,
   captureInternalNotes: false,
   decisionFields: [],
   minDraftChars: 80,
@@ -178,6 +178,9 @@ export function decideOnSend(input: {
   draft: DraftState | null;
   draftFields: Record<string, unknown>;
   send: PendingSend;
+  /** The picked reason code (claims pack), required for a changed send when requireReason is on. */
+  reasonCode: string | null;
+  /** Optional free-text note. */
   reason: string;
   actor: string | null;
   settings: AppSettings;
@@ -197,7 +200,8 @@ export function decideOnSend(input: {
   const sentAnswer: CaptureAnswer = { text: sentText, ...(hasFields ? { fields: send.fields } : {}) };
   const diff = diffCaptureAnswers(draftAnswer, sentAnswer);
   const reason = input.reason.trim();
-  if (diff.changed && settings.requireReason && !reason) {
+  const reasonCode = input.reasonCode?.trim() || null;
+  if (diff.changed && settings.requireReason && !reasonCode) {
     return { action: "need-reason", changedFields: diff.changedFields };
   }
 
@@ -211,6 +215,7 @@ export function decideOnSend(input: {
     draft: draftAnswer,
     sent: sentAnswer,
     reason: reason || null,
+    reasonCode: diff.changed ? reasonCode : null,
     draftRunId: draft.runId ?? null,
     draftModel: draft.model ?? null,
     url: ticket.url,
@@ -240,10 +245,4 @@ export function statusLine(
   return `Draft ${from} · ${words} words`;
 }
 
-export const QUICK_REASONS = [
-  "Wrong coverage decision",
-  "Wrong amount or date",
-  "Missing required step",
-  "Tone / wording",
-  "Policy exception",
-];
+export const QUICK_REASONS = CLAIMS_REASON_CODES;

@@ -53,23 +53,31 @@ async function main(): Promise<void> {
 
   const root = document.getElementById("app")!;
   const status = el("div", { class: "status" }, "Waiting for a draft");
+  // One click picks the reason (what the scorecard counts); the note is optional detail.
+  let reasonCode: string | null = null;
+  const quick = el("div", { class: "quick", role: "radiogroup", "aria-label": "Why did you change it?" });
+  const chips: HTMLButtonElement[] = [];
+  for (const q of QUICK_REASONS) {
+    const b = el(
+      "button",
+      { type: "button", class: "chip", "data-code": q.code },
+      q.label,
+    ) as HTMLButtonElement;
+    b.addEventListener("click", () => {
+      reasonCode = reasonCode === q.code ? null : q.code;
+      for (const c of chips) c.classList.toggle("on", c.dataset.code === reasonCode);
+    });
+    chips.push(b);
+    quick.appendChild(b);
+  }
   const reason = el("textarea", {
     class: "reason",
     rows: "2",
-    placeholder: "Why did you change it? One line.",
+    placeholder: "Anything else? Optional.",
   }) as HTMLTextAreaElement;
-  const quick = el("div", { class: "quick" });
-  for (const q of QUICK_REASONS) {
-    const b = el("button", { type: "button", class: "chip" }, q);
-    b.addEventListener("click", () => {
-      reason.value = q;
-      reason.focus();
-    });
-    quick.appendChild(b);
-  }
   const mark = el("button", { type: "button", class: "link" }, "Use the current text as the draft");
   const note = el("div", { class: "note" }, "");
-  root.append(status, reason, quick, mark, note);
+  root.append(status, quick, reason, mark, note);
   void client.invoke("resize", { width: "100%", height: "260px" });
 
   let lastResult: { kind: string; changed: boolean; dedup: boolean } | null = null;
@@ -156,15 +164,16 @@ async function main(): Promise<void> {
         type: (data["ticket.comment.type"] as string) ?? "publicReply",
         fields: ticket.fields,
       },
+      reasonCode,
       reason: reason.value,
       actor: (data["currentUser.email"] as string | null) ?? null,
       settings,
     });
     if (decision.action === "skip") return true;
     if (decision.action === "need-reason") {
-      reason.focus();
+      chips[0]?.focus();
       // Rejecting with a string blocks the submit and shows the message to the agent.
-      throw `Overturn: add one line on why you changed the ${decision.changedFields.length ? decision.changedFields.join(", ") : "reply"} (or ask your admin to turn off "require a reason").`;
+      throw `Overturn: pick why you changed the ${decision.changedFields.length ? decision.changedFields.join(", ") : "reply"} in the Overturn panel (one click).`;
     }
     try {
       const r = await client.request<CaptureResult>({
@@ -178,6 +187,8 @@ async function main(): Promise<void> {
       lastResult = { kind: r.kind, changed: r.changed, dedup: r.deduplicated };
       note.textContent = r.changed && r.case ? `Case: ${r.case.title}` : "";
       reason.value = "";
+      reasonCode = null;
+      for (const c of chips) c.classList.remove("on");
       detector.set(null);
       render();
     } catch (e) {

@@ -225,6 +225,7 @@ export const corrections = pgTable(
     kind: correctionKind("kind").notNull(),
     correctedOutput: jsonb("corrected_output"),
     note: text("note"),
+    reasonCode: text("reason_code"),
     actor: text("actor"),
     source: correctionSource("source").notNull(),
     ...timestamps,
