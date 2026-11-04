@@ -249,6 +249,49 @@ describe("POST /v1/capture", () => {
     });
   });
 
+  it("by-expert shows fixes kept only, behind the admin toggle, and never a rate or a time", async () => {
+    // Untouched sends carry how long the draft sat in front of the expert; timed per capture, read per team.
+    for (const [ext, secs] of [
+      ["zd:t1", 4],
+      ["zd:t2", 7],
+      ["zd:t3", 95],
+    ] as const) {
+      const r = await api<CaptureResult>(ctx, "POST", "/v1/capture", {
+        source: "zendesk",
+        externalId: ext,
+        agent: "claims-reply",
+        actor: "fast@carrier.com",
+        context: thread,
+        draft: { text: draft },
+        sent: { text: draft },
+        secondsToSend: secs,
+      });
+      expect(r.status).toBe(201);
+      expect(r.body.kind).toBe("approve");
+    }
+    const off = await api<import("@overturn-ai/shared").CaptureStats>(
+      ctx,
+      "GET",
+      "/v1/capture/stats?days=30",
+    );
+    expect(off.body.byExpert).toEqual([]);
+    expect(off.body.timeToSend.timed).toBeGreaterThanOrEqual(3);
+    expect(off.body.timeToSend.buckets.find((b) => b.label === "<10s")?.count).toBeGreaterThanOrEqual(2);
+    expect(off.body.timeToSend.buckets.find((b) => b.label === "1-5m")?.count).toBeGreaterThanOrEqual(1);
+
+    const patched = await api(ctx, "PATCH", "/v1/project", { settings: { capture: { showByExpert: true } } });
+    expect(patched.status).toBe(200);
+    const on = await api<import("@overturn-ai/shared").CaptureStats>(ctx, "GET", "/v1/capture/stats?days=30");
+    const ray = on.body.byExpert.find((a) => a.actor === "ray@carrier.com");
+    expect(ray?.fixesKept).toBeGreaterThanOrEqual(1);
+    // The expert whose sends were all untouched does not appear at all: no "0 fixes" shaming row,
+    // and no row carries a rate or a time.
+    expect(on.body.byExpert.find((a) => a.actor === "fast@carrier.com")).toBeUndefined();
+    for (const row of on.body.byExpert) expect(Object.keys(row).sort()).toEqual(["actor", "fixesKept"]);
+    expect(JSON.stringify(on.body.byExpert)).not.toMatch(/rate|seconds|untouched/i);
+    await api(ctx, "PATCH", "/v1/project", { settings: { capture: { showByExpert: false } } });
+  });
+
   it("rejects a capture without a draft", async () => {
     const res = await api(ctx, "POST", "/v1/capture", { externalId: "zd:1", sent: { text: "x" } });
     expect(res.status).toBe(400);
@@ -268,10 +311,9 @@ describe("GET /v1/capture/stats", () => {
     expect(s.untouched + s.edited).toBe(s.captures);
     expect(s.untouchedRate).toBeCloseTo(s.untouched / s.captures, 5);
     expect(s.experts).toBeGreaterThanOrEqual(1);
-    const ray = s.byActor.find((a) => a.actor === "ray@carrier.com");
-    expect(ray).toBeDefined();
-    expect(ray?.edited).toBe(ray?.captures);
-    expect(ray?.untouchedRate).toBe(0);
+    // Per-expert is off by default: the scorecard is a team number.
+    expect(s.byExpert).toEqual([]);
+    expect(s.timeToSend.buckets.map((b) => b.label)).toEqual(["<10s", "10-60s", "1-5m", "5m+"]);
     expect(s.byReason.map((r) => r.reason)).toContain("storm claims get 2-day contact; ask to keep evidence");
     expect(s.bySource.find((x) => x.source === "zendesk")?.count).toBeGreaterThanOrEqual(3);
     expect(s.bySource.find((x) => x.source === "front")?.count).toBe(1);

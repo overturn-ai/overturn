@@ -144,6 +144,7 @@ export class CorrectionsService {
             correctedOutput: input.correctedOutput ?? null,
             note: input.note ?? null,
             reasonCode: input.reasonCode ?? null,
+            secondsToSend: input.secondsToSend ?? null,
             actor: input.actor ?? null,
             source: input.source,
           })

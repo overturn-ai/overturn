@@ -202,10 +202,17 @@ describe("web UI", () => {
     });
     expect(cap.status).toBe(201);
     await page.goto("/capture");
-    await page.getByText("ray@carrier.com").waitFor({ timeout: 15_000 });
-    const capText = await page.textContent("main");
-    expect(capText).toContain("storm sla is 2 days");
+    await page.getByText("storm sla is 2 days").waitFor({ timeout: 15_000 });
     expect(await page.getByTestId("capture-untouched").textContent()).toMatch(/\d+%/);
+    // By-expert is off by default: no expert is named on the scorecard.
+    expect(await page.textContent("main")).not.toContain("ray@carrier.com");
+    await page.goto("/settings");
+    await page.getByTestId("capture-show-by-expert").check();
+    await page.getByTestId("save-settings").click();
+    await page.waitForTimeout(1500);
+    await page.goto("/capture");
+    await page.getByText("ray@carrier.com").waitFor({ timeout: 15_000 });
+    expect(await page.textContent("main")).toContain("Fixes kept, by expert");
 
     // --- settings: mint an API key ---
     await page.goto("/settings");

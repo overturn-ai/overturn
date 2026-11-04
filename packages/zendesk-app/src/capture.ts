@@ -184,6 +184,8 @@ export function decideOnSend(input: {
   reason: string;
   actor: string | null;
   settings: AppSettings;
+  /** When Submit was pressed; with the draft's `at`, gives how long it sat in front of the expert. */
+  now?: number;
 }): SendDecision {
   const { ticket, draft, send, settings } = input;
   const sentText = stripHtml(send.text);
@@ -216,6 +218,7 @@ export function decideOnSend(input: {
     sent: sentAnswer,
     reason: reason || null,
     reasonCode: diff.changed ? reasonCode : null,
+    secondsToSend: Math.max(0, Math.round(((input.now ?? Date.now()) - draft.at) / 100) / 10),
     draftRunId: draft.runId ?? null,
     draftModel: draft.model ?? null,
     url: ticket.url,

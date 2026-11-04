@@ -136,6 +136,7 @@ describe("decideOnSend", () => {
     expect(d.body.agent).toBe("claims-reply");
     expect(d.body.draft.text).toBe(d.body.sent.text);
     expect(d.body.tags).toEqual(["draft:inserted", "public-reply"]);
+    expect(typeof d.body.secondsToSend).toBe("number");
     expect(d.body.context).toHaveLength(2);
   });
 
@@ -204,6 +205,17 @@ describe("decideOnSend", () => {
     expect(d.changedFields).toEqual(["status"]);
     expect(d.body.draft.fields).toEqual({ status: "covered" });
     expect(d.body.sent.fields).toEqual({ status: "denied" });
+  });
+
+  it("records how long the draft sat in front of the expert", () => {
+    const d = decideOnSend({
+      ...base,
+      draft: { text: draftText, origin: "inserted", at: 10_000 },
+      now: 14_250,
+      send: { text: draftText, type: "publicReply", fields: {} },
+    });
+    if (d.action !== "capture") throw new Error(d.action);
+    expect(d.body.secondsToSend).toBe(4.3);
   });
 
   it("a recorded draft attaches to its run", () => {

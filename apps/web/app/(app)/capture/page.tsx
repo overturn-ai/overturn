@@ -133,33 +133,67 @@ export default function CapturePage() {
       ) : null}
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardDescription>By expert</CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Table>
-              <THead>
-                <TR>
-                  <TH>Expert</TH>
-                  <TH className="text-right">Captured</TH>
-                  <TH className="text-right">Edited</TH>
-                  <TH className="text-right">Untouched</TH>
-                </TR>
-              </THead>
-              <TBody>
-                {(s?.byActor ?? []).map((a) => (
-                  <TR key={a.actor ?? "-"}>
-                    <TD>{a.actor ?? <span className="text-muted-foreground">unknown</span>}</TD>
-                    <TD className="text-right tabular-nums">{a.captures}</TD>
-                    <TD className="text-right tabular-nums">{a.edited}</TD>
-                    <TD className="text-right tabular-nums">{pct(a.untouchedRate)}</TD>
+        {s && s.byExpert.length > 0 ? (
+          <Card>
+            <CardHeader>
+              <CardDescription>Fixes kept, by expert</CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              <Table>
+                <THead>
+                  <TR>
+                    <TH>Expert</TH>
+                    <TH className="text-right">Fixes kept</TH>
                   </TR>
-                ))}
-              </TBody>
-            </Table>
-          </CardContent>
-        </Card>
+                </THead>
+                <TBody>
+                  {s.byExpert.map((a) => (
+                    <TR key={a.actor ?? "-"}>
+                      <TD>{a.actor ?? <span className="text-muted-foreground">unknown</span>}</TD>
+                      <TD className="text-right tabular-nums">{a.fixesKept}</TD>
+                    </TR>
+                  ))}
+                </TBody>
+              </Table>
+              <p className="px-4 py-2 text-xs text-muted-foreground">
+                Credit for expertise captured. There is no per-person rate anywhere in Overturn.
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <CardHeader>
+              <CardDescription>Time from draft to send (untouched sends)</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {s && s.timeToSend.timed > 0 ? (
+                <div className="space-y-1.5">
+                  {s.timeToSend.buckets.map((b) => (
+                    <div key={b.label} className="flex items-center gap-2 text-sm">
+                      <span className="w-14 text-muted-foreground">{b.label}</span>
+                      <div className="h-2 flex-1 rounded-sm bg-accent">
+                        <div
+                          className="h-2 rounded-sm bg-foreground/70"
+                          style={{ width: `${(b.count / s.timeToSend.timed) * 100}%` }}
+                        />
+                      </div>
+                      <span className="w-10 text-right tabular-nums">
+                        {Math.round((b.count / s.timeToSend.timed) * 100)}%
+                      </span>
+                    </div>
+                  ))}
+                  <p className="pt-1 text-xs text-muted-foreground">
+                    Team-level only. Fast untouched sends are where a sampled second review earns its keep.
+                  </p>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  No timed sends yet; the Zendesk app records this automatically.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        )}
         <Card>
           <CardHeader>
             <CardDescription>Why experts changed the draft</CardDescription>

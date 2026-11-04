@@ -9,6 +9,7 @@ import {
   jsonb,
   pgEnum,
   pgTable,
+  real,
   text,
   timestamp,
   uniqueIndex,
@@ -226,6 +227,8 @@ export const corrections = pgTable(
     correctedOutput: jsonb("corrected_output"),
     note: text("note"),
     reasonCode: text("reason_code"),
+    /** Capture only: seconds between the draft appearing and the send. Never joined to actor in any read path. */
+    secondsToSend: real("seconds_to_send"),
     actor: text("actor"),
     source: correctionSource("source").notNull(),
     ...timestamps,

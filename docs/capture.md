@@ -69,7 +69,7 @@ overturn capture --source zendesk --external-id zd:48213 --agent claims-reply \
 
 ## The scorecard
 
-`GET /v1/capture/stats?days=30&agent=` (web: **Capture**) is the number a claims leader reads: how many drafts went out untouched, how many an expert fixed, who fixed what, the top reasons, by source and by week. "Sent untouched" rising while the suite stays green is the labor-leverage number; the edited count is the training set growing.
+`GET /v1/capture/stats?days=30&agent=` (web: **Capture**) is the number an ops leader reads: how many drafts went out untouched, how many an expert fixed, the top reasons, by source and by week, and how long untouched drafts sat in front of an expert (as a team distribution). It is a team number. Per-expert shows only "fixes kept", as credit, and only when an admin turns on `settings.capture.showByExpert`; there is no per-person rate or time anywhere in the API. "Sent untouched" rising while the suite stays green is the leverage number; the edited count is the training set growing.
 
 ## Then
 

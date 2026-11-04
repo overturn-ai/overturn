@@ -60,6 +60,7 @@ export class ProjectsController {
       ...current,
       ...incoming,
       retrain: { ...current.retrain, ...(incoming.retrain ?? {}) },
+      capture: { ...current.capture, ...(incoming.capture ?? {}) },
     });
     const [updated] = await this.db
       .update(projects)

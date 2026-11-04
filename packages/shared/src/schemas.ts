@@ -223,6 +223,16 @@ export const retrainSettingsSchema = z.object({
 });
 export type RetrainSettings = z.infer<typeof retrainSettingsSchema>;
 
+export const captureSettingsSchema = z.object({
+  /**
+   * Show "fixes kept" per expert on the Capture page. Off by default: the scorecard is a team
+   * number, and a per-person table reads as a productivity score to the people doing the
+   * correcting. Even when on, it shows counts of corrections kept (credit), never a rate.
+   */
+  showByExpert: z.boolean().default(false),
+});
+export type CaptureSettings = z.infer<typeof captureSettingsSchema>;
+
 export const projectSettingsSchema = z.object({
   defaultScorer: scorerNameSchema.nullable().default(null),
   judgeModel: z.string().default("openai/gpt-4.1-mini"),
@@ -237,6 +247,7 @@ export const projectSettingsSchema = z.object({
   promotedModel: z.string().nullable().default(null),
   /** Opt-in continuous retraining: once enough new corrections pile up, train, gate, shadow, notify. Never promotes. */
   retrain: retrainSettingsSchema.default(retrainSettingsSchema.parse({})),
+  capture: captureSettingsSchema.default(captureSettingsSchema.parse({})),
 });
 export type ProjectSettings = z.infer<typeof projectSettingsSchema>;
 
@@ -349,6 +360,8 @@ export const correctionCreateSchema = z.object({
   correctedOutput: jsonValueSchema.optional(),
   note: z.string().max(10_000).nullish(),
   reasonCode: reasonCodeSchema.nullish(),
+  /** Set by capture: seconds the draft sat in front of the expert before the send. */
+  secondsToSend: z.number().min(0).nullish(),
   actor: z.string().max(200).nullish(),
   source: correctionSourceSchema.default("api"),
   /** Override the scorer the case gets; omitted = chosen from the shape of the expected answer. */
@@ -588,6 +601,12 @@ export const captureCreateSchema = z.object({
   reason: z.string().max(10_000).nullish(),
   /** Why, as a code (claims pack: wrong_coverage_decision, reserve_too_low, tone_wording, ...). */
   reasonCode: reasonCodeSchema.nullish(),
+  /** Seconds between the draft appearing in front of the expert and the send. Team-level signal only. */
+  secondsToSend: z
+    .number()
+    .min(0)
+    .max(86_400 * 30)
+    .nullish(),
   /** Which model wrote the draft, when known. */
   draftModel: z.string().max(200).nullish(),
   draftProvider: z.string().max(100).nullish(),
@@ -629,14 +648,16 @@ export const captureStatsSchema = z.object({
   edited: z.number().int(),
   untouchedRate: z.number(),
   experts: z.number().int(),
-  byActor: z.array(
-    z.object({
-      actor: z.string().nullable(),
-      captures: z.number().int(),
-      edited: z.number().int(),
-      untouchedRate: z.number(),
-    }),
-  ),
+  /**
+   * Credit, not a score: corrections kept per expert. Empty unless `settings.capture.showByExpert`
+   * is on. Never carries a rate or a time; the stats service enforces that.
+   */
+  byExpert: z.array(z.object({ actor: z.string().nullable(), fixesKept: z.number().int() })),
+  /** How long untouched sends sat in front of an expert, as a team-level distribution. */
+  timeToSend: z.object({
+    timed: z.number().int(),
+    buckets: z.array(z.object({ label: z.string(), count: z.number().int() })),
+  }),
   /** Grouped by reasonCode when present, else by the note. `excluded` counts the ones kept out of the suite. */
   byReason: z.array(
     z.object({ reason: z.string(), label: z.string(), count: z.number().int(), excluded: z.boolean() }),
@@ -673,7 +694,10 @@ export const projectPatchSchema = z.object({
   name: z.string().min(1).max(200).optional(),
   settings: projectSettingsSchema
     .partial()
-    .extend({ retrain: retrainSettingsSchema.partial().optional() })
+    .extend({
+      retrain: retrainSettingsSchema.partial().optional(),
+      capture: captureSettingsSchema.partial().optional(),
+    })
     .optional(),
 });
 export type ProjectPatch = z.infer<typeof projectPatchSchema>;

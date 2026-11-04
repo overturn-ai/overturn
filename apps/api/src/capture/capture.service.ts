@@ -8,6 +8,7 @@ import {
   captureSystemPrompt,
   diffCaptureAnswers,
   extractAnswer,
+  projectSettingsSchema,
   reasonCodeLabel,
   renderCaptureContext,
   SUITE_EXCLUDED_REASON_CODES,
@@ -17,7 +18,7 @@ import { v7 as uuidv7 } from "uuid";
 import { CorrectionsService } from "../corrections/corrections.service";
 import type { Db } from "../db/client";
 import { DB } from "../db/db.module";
-import { corrections, runs, steps } from "../db/schema";
+import { corrections, projects, runs, steps } from "../db/schema";
 import { IngestService } from "../ingest/ingest.service";
 
 /**
@@ -49,6 +50,7 @@ export class CaptureService {
       correctedOutput: diff.changed ? sentValue : undefined,
       note: input.reason ?? null,
       reasonCode: input.reasonCode ?? null,
+      secondsToSend: input.secondsToSend ?? null,
       actor: input.actor ?? null,
       source: "capture",
     });
@@ -86,14 +88,37 @@ export class CaptureService {
       .from(corrections)
       .innerJoin(runs, eq(runs.id, corrections.runId))
       .where(and(...where));
-    const byActor = await this.db
-      .select({ actor: corrections.actor, captures: count, edited })
+    // Per-expert is credit only (fixes kept), and only when the admin turned it on. This query
+    // must never select a rate, `edited` as a share, or `secondsToSend`: a per-person untouched
+    // rate or a per-person stopwatch is exactly what turns the people correcting the AI into
+    // the people being measured by it (docs/decisions.md).
+    const byExpert = (await this.showByExpert(projectId))
+      ? await this.db
+          .select({ actor: corrections.actor, fixesKept: edited })
+          .from(corrections)
+          .innerJoin(runs, eq(runs.id, corrections.runId))
+          .where(and(...where, eq(corrections.kind, "edit")))
+          .groupBy(corrections.actor)
+          .orderBy(desc(edited))
+          .limit(50)
+      : [];
+    // Time from draft to send, as a team-level distribution over untouched sends: never grouped by actor.
+    const bucket = sql<string>`case
+      when ${corrections.secondsToSend} < 10 then '<10s'
+      when ${corrections.secondsToSend} < 60 then '10-60s'
+      when ${corrections.secondsToSend} < 300 then '1-5m'
+      else '5m+' end`;
+    const timeRows = await this.db
+      .select({ label: bucket, count })
       .from(corrections)
       .innerJoin(runs, eq(runs.id, corrections.runId))
-      .where(and(...where))
-      .groupBy(corrections.actor)
-      .orderBy(desc(count))
-      .limit(50);
+      .where(and(...where, eq(corrections.kind, "approve"), sql`${corrections.secondsToSend} is not null`))
+      .groupBy(bucket);
+    const order = ["<10s", "10-60s", "1-5m", "5m+"];
+    const timeToSend = {
+      timed: timeRows.reduce((n, r) => n + r.count, 0),
+      buckets: order.map((label) => ({ label, count: timeRows.find((r) => r.label === label)?.count ?? 0 })),
+    };
     // The code when the expert picked one, else the note: a team on the picker gets a clean table.
     const reason = sql<string>`coalesce(${corrections.reasonCode}, lower(trim(${corrections.note})))`;
     const byReasonRows = await this.db
@@ -150,12 +175,23 @@ export class CaptureService {
       edited: editedN,
       untouchedRate: rate(captures, editedN),
       experts: totals?.experts ?? 0,
-      byActor: byActor.map((r) => ({ ...r, untouchedRate: rate(r.captures, r.edited) })),
+      byExpert,
+      timeToSend,
       byReason,
       bySource,
       byAgent,
       weekly: weekly.map((w) => ({ ...w, weekStart: new Date(w.weekStart).toISOString() })),
     };
+  }
+
+  private async showByExpert(projectId: string): Promise<boolean> {
+    const [p] = await this.db
+      .select({ settings: projects.settings })
+      .from(projects)
+      .where(eq(projects.id, projectId))
+      .limit(1);
+    const parsed = projectSettingsSchema.safeParse(p?.settings ?? {});
+    return parsed.success ? parsed.data.capture.showByExpert : false;
   }
 
   /**

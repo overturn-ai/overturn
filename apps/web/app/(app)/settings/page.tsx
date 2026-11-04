@@ -37,6 +37,7 @@ export default function SettingsPage() {
     retentionDays: string;
     reviewWebhookUrl: string;
     newPathsBlock: boolean;
+    captureShowByExpert: boolean;
     retrainEnabled: boolean;
     retrainBaseModel: string;
     retrainMinNewRows: string;
@@ -80,6 +81,7 @@ export default function SettingsPage() {
           retentionDays: Number(form!.retentionDays),
           reviewWebhookUrl: (form!.reviewWebhookUrl ?? "").trim() || null,
           newPathsBlock: form!.newPathsBlock,
+          capture: { showByExpert: form!.captureShowByExpert },
           retrain: {
             enabled: form!.retrainEnabled,
             baseModel: form!.retrainBaseModel.trim() || null,
@@ -108,6 +110,7 @@ export default function SettingsPage() {
           retentionDays: String(p.settings.retentionDays),
           reviewWebhookUrl: p.settings.reviewWebhookUrl ?? "",
           newPathsBlock: p.settings.newPathsBlock,
+          captureShowByExpert: p.settings.capture?.showByExpert ?? false,
           retrainEnabled: p.settings.retrain.enabled,
           retrainBaseModel: p.settings.retrain.baseModel ?? "",
           retrainMinNewRows: String(p.settings.retrain.minNewRows),
@@ -267,6 +270,23 @@ export default function SettingsPage() {
                   </span>
                 </span>
               </label>
+              <label className="flex items-start gap-2 text-sm sm:col-span-2">
+                <input
+                  type="checkbox"
+                  className="mt-1"
+                  checked={f.captureShowByExpert}
+                  onChange={(e) => setForm({ ...f, captureShowByExpert: e.target.checked })}
+                  data-testid="capture-show-by-expert"
+                />
+                <span>
+                  Show fixes kept by expert on the Capture page
+                  <span className="block text-xs text-muted-foreground">
+                    Off by default. When on, the Capture page lists how many corrections each expert
+                    contributed, as credit. It never shows a per-person untouched rate or time to send; those
+                    exist only as team numbers.
+                  </span>
+                </span>
+              </label>
               <div className="space-y-2 rounded-md border p-3 sm:col-span-2">
                 <label className="flex items-start gap-2 text-sm">
                   <input
@@ -355,7 +375,7 @@ export default function SettingsPage() {
                 </p>
               </div>
               <div className="sm:col-span-2">
-                <Button type="submit" disabled={!form || save.isPending}>
+                <Button type="submit" disabled={!form || save.isPending} data-testid="save-settings">
                   Save
                 </Button>
                 {save.error && <span className="ml-3 text-sm text-destructive">{save.error.message}</span>}

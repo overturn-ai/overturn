@@ -168,6 +168,7 @@ async function main(): Promise<void> {
       reason: reason.value,
       actor: (data["currentUser.email"] as string | null) ?? null,
       settings,
+      now: Date.now(),
     });
     if (decision.action === "skip") return true;
     if (decision.action === "need-reason") {
