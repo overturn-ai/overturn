@@ -229,7 +229,7 @@ export function renderMarkdownReport(
   lines.push(...replayReceipt(report));
   if (opts.link) lines.push(`[Open the full report](${opts.link})`, "");
   lines.push(
-    `<sub>Job \`${job.id}\` · mode ${job.mode} · [Overturn](https://github.com/overrule-ai/overturn)</sub>`,
+    `<sub>Job \`${job.id}\` · mode ${job.mode} · [Overturn](https://github.com/overturn-ai/overturn)</sub>`,
   );
   return lines.join("\n");
 }

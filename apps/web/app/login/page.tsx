@@ -79,7 +79,7 @@ export default function LoginPage() {
           Docs
         </a>
         <span className="mx-2">·</span>
-        <a className="hover:text-foreground" href="https://github.com/overrule-ai/overturn/issues">
+        <a className="hover:text-foreground" href="https://github.com/overturn-ai/overturn/issues">
           Issues
         </a>
         <span className="mx-2">·</span>

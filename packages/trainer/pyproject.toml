@@ -22,8 +22,8 @@ train = ["torch>=2.3", "transformers>=4.44", "peft>=0.12", "trl>=0.12", "dataset
 overturn-trainer = "overturn_trainer.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/overrule-ai/overturn"
-Documentation = "https://github.com/overrule-ai/overturn/blob/main/docs/owned-models.md"
+Homepage = "https://github.com/overturn-ai/overturn"
+Documentation = "https://github.com/overturn-ai/overturn/blob/main/docs/owned-models.md"
 
 [build-system]
 requires = ["hatchling"]

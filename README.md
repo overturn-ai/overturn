@@ -1,14 +1,14 @@
 <p><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo-dark.svg"><img src="docs/assets/logo.svg" alt="Overturn" width="320"></picture></p>
 
 <p>
-<a href="https://github.com/overrule-ai/overturn/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/overrule-ai/overturn/actions/workflows/ci.yml/badge.svg"></a>
+<a href="https://github.com/overturn-ai/overturn/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/overturn-ai/overturn/actions/workflows/ci.yml/badge.svg"></a>
 <a href="https://www.npmjs.com/package/@overturn-ai/sdk"><img alt="npm" src="https://img.shields.io/npm/v/%40overturn-ai%2Fsdk?label=%40overturn-ai%2Fsdk"></a>
 <a href="https://pypi.org/project/overturn/"><img alt="PyPI" src="https://img.shields.io/pypi/v/overturn?label=overturn%20(PyPI)"></a>
 <a href="LICENSE"><img alt="Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-black"></a>
 <a href="https://overturn.run"><img alt="overturn.run" src="https://img.shields.io/badge/site-overturn.run-black"></a>
 </p>
 
-[Site](https://overturn.run) · [Docs](https://docs.overturn.run) · [Wiki](https://github.com/overrule-ai/overturn/wiki) · [Discussions](https://github.com/overrule-ai/overturn/discussions) · [Hosted app](https://app.overturn.run) · [Contributing](CONTRIBUTING.md)
+[Site](https://overturn.run) · [Docs](https://docs.overturn.run) · [Wiki](https://github.com/overturn-ai/overturn/wiki) · [Discussions](https://github.com/overturn-ai/overturn/discussions) · [Hosted app](https://app.overturn.run) · [Contributing](CONTRIBUTING.md)
 
 **Overturn captures corrections where the expert already works (Zendesk, your own UI, the SDK), not in an annotation queue they have to visit.**
 
@@ -23,7 +23,7 @@ Claims teams first: a claims adjuster's corrections (coverage, reserve, denial r
 Needs Node 22, pnpm 10 and Postgres 16 with pgvector (`docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=postgres pgvector/pgvector:pg16`).
 
 ```bash
-git clone https://github.com/overrule-ai/overturn && cd overturn
+git clone https://github.com/overturn-ai/overturn && cd overturn
 pnpm install && pnpm build
 cp .env.example .env                                  # DATABASE_URL -> your Postgres
 pnpm db:migrate

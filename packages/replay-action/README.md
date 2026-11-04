@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
-      - uses: overrule-ai/overturn/packages/replay-action@main
+      - uses: overturn-ai/overturn/packages/replay-action@main
         with:
           api-key: ${{ secrets.OVERTURN_API_KEY }}
           model: openai/gpt-4.1-mini

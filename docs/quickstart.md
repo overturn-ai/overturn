@@ -5,7 +5,7 @@ Ten minutes from clone to a replay report that shows a regression. Needs Node 22
 ## 1. Install and start
 
 ```bash
-git clone https://github.com/overrule-ai/overturn && cd overturn
+git clone https://github.com/overturn-ai/overturn && cd overturn
 pnpm install && pnpm build
 cp .env.example .env                 # DATABASE_URL points at your Postgres
 pnpm db:migrate
@@ -88,7 +88,7 @@ Whole trajectories through your agent, tools answered from the recording: `npx o
 ## 5. Gate pull requests
 
 ```yaml
-- uses: overrule-ai/overturn/packages/replay-action@main
+- uses: overturn-ai/overturn/packages/replay-action@main
   with:
     api-key: ${{ secrets.OVERTURN_API_KEY }}
     model: openai/gpt-4.1-mini

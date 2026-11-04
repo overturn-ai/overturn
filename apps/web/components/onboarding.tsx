@@ -17,7 +17,7 @@ function snippet(lang: Lang, key: string, apiUrl: string): string {
 # one-line reason, and files the correction as a case.
 #
 # 1. Admin Center → Apps and integrations → Zendesk Support apps → Upload private app
-#    https://github.com/overrule-ai/overturn/releases  (overturn-zendesk-app.zip)
+#    https://github.com/overturn-ai/overturn/releases  (overturn-zendesk-app.zip)
 # 2. App settings:
 #      overturn_api_key   = ${k}
 #      overturn_base_url  = ${apiUrl}

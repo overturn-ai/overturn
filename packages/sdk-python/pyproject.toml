@@ -19,9 +19,9 @@ openai = ["openai>=1.40"]
 anthropic = ["anthropic>=0.30"]
 
 [project.urls]
-Homepage = "https://github.com/overrule-ai/overturn"
-Repository = "https://github.com/overrule-ai/overturn"
-Documentation = "https://github.com/overrule-ai/overturn/blob/main/docs/sdk.md"
+Homepage = "https://github.com/overturn-ai/overturn"
+Repository = "https://github.com/overturn-ai/overturn"
+Documentation = "https://github.com/overturn-ai/overturn/blob/main/docs/sdk.md"
 
 [build-system]
 requires = ["hatchling"]

@@ -11,7 +11,7 @@ export default defineConfig({
       description: "Every human correction of an AI agent becomes a replayable regression test.",
       logo: { src: "./public/logo-dark.svg", replacesTitle: true },
       favicon: "/favicon.svg",
-      social: [{ icon: "github", label: "GitHub", href: "https://github.com/overrule-ai/overturn" }],
+      social: [{ icon: "github", label: "GitHub", href: "https://github.com/overturn-ai/overturn" }],
       customCss: ["./src/styles/theme.css"],
       sidebar: [
         { label: "Overview", link: "/" },
@@ -29,7 +29,7 @@ export default defineConfig({
         { label: "Terms", link: "/terms/" },
         { label: "Privacy", link: "/privacy/" },
       ],
-      editLink: { baseUrl: "https://github.com/overrule-ai/overturn/edit/main/docs/" },
+      editLink: { baseUrl: "https://github.com/overturn-ai/overturn/edit/main/docs/" },
       lastUpdated: false,
       pagination: true,
       components: {},

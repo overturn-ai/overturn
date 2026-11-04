@@ -12,7 +12,7 @@ Nothing has to be instrumented. If the drafting agent did record its run with th
 The Overturn app sits in the ticket sidebar.
 
 1. Create a project API key in Overturn (Settings → API keys).
-2. Download `overturn-zendesk-app.zip` from the [latest release](https://github.com/overrule-ai/overturn/releases) and upload it in Admin Center → Apps and integrations → Zendesk Support apps → **Upload private app**.
+2. Download `overturn-zendesk-app.zip` from the [latest release](https://github.com/overturn-ai/overturn/releases) and upload it in Admin Center → Apps and integrations → Zendesk Support apps → **Upload private app**.
 3. Settings: `overturn_api_key` (kept server-side by Zendesk), `agent` (the workflow; one regression suite per workflow, default `claims-reply`), and optionally `decision_fields`: the custom fields that *are* the decision, as `id:label` pairs, e.g. `custom_field_123:status, custom_field_456:reserve`.
 
 What the agent sees:
@@ -23,7 +23,7 @@ What the agent sees:
 
 Overturn failing never blocks the send. The run page links back to the ticket.
 
-Source: [`packages/zendesk-app`](https://github.com/overrule-ai/overturn/tree/main/packages/zendesk-app). Front, Salesforce Service Cloud and Gmail follow the same shape.
+Source: [`packages/zendesk-app`](https://github.com/overturn-ai/overturn/tree/main/packages/zendesk-app). Front, Salesforce Service Cloud and Gmail follow the same shape.
 
 ## Any other tool: `POST /v1/capture`
 

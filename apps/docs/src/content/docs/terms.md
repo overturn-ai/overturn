@@ -19,4 +19,4 @@ description: Terms for the hosted Overturn at app.overturn.run during the free b
 
 **Changes.** We will post changes here and, for material changes, email workspace members.
 
-**Contact.** [GitHub issues](https://github.com/overrule-ai/overturn/issues) for the project; the email on your workspace's invitation for anything private.
+**Contact.** [GitHub issues](https://github.com/overturn-ai/overturn/issues) for the project; the email on your workspace's invitation for anything private.

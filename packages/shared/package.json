@@ -5,12 +5,12 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/overrule-ai/overturn.git",
+    "url": "git+https://github.com/overturn-ai/overturn.git",
     "directory": "packages/shared"
   },
-  "homepage": "https://github.com/overrule-ai/overturn#readme",
+  "homepage": "https://github.com/overturn-ai/overturn#readme",
   "bugs": {
-    "url": "https://github.com/overrule-ai/overturn/issues"
+    "url": "https://github.com/overturn-ai/overturn/issues"
   },
   "keywords": [
     "llm",
