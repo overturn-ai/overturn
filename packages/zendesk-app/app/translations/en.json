@@ -1,8 +1,8 @@
 {
   "app": {
     "name": "Overturn",
-    "short_description": "Every time an agent fixes an AI draft, Overturn keeps it as a replayable case.",
-    "long_description": "Overturn watches the reply box for the AI draft, diffs it against what the agent actually sends, asks for a one-line reason, and records the correction as a case you can replay against any model before you change prompts or models.",
-    "installation_instructions": "Create a project API key in Overturn (Settings → API keys) and paste it into the app settings. Set the workflow name (one regression suite per workflow). Optionally list the custom fields that carry the decision as id:label pairs."
+    "short_description": "QA for AI-drafted replies: untouched rate, fixes by reason, and a test before every model change.",
+    "long_description": "Your agents already review every AI-drafted reply before it goes out. Overturn records what the AI wrote, what the agent sent and why it changed, with a one-click reason, whichever tool drafted the reply. You get the untouched rate and the fixes by reason, by team and by week (never a per-agent rate), and every fix replays as a regression test before the next model or prompt change. The app reads a ticket only after an AI draft appears in its reply box.",
+    "installation_instructions": "Create a project API key in Overturn (Settings → API keys) and paste it into the app settings. Set the workflow name (one suite per workflow). Optionally list the custom fields that carry the decision as id:label pairs, and a scope tag to limit which tickets are watched."
   }
 }
