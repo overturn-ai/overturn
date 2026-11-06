@@ -21,7 +21,7 @@
   "parameters": [
     {
       "name": "overturn_api_key",
-      "type": "password",
+      "type": "text",
       "secure": true,
       "required": true,
       "helpText": "A project API key from Overturn (Settings → API keys). Stored by Zendesk, never sent to the browser."
