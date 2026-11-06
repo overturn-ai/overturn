@@ -206,4 +206,15 @@ describe("magic-link auth", () => {
     });
     expect(foreign.status).toBe(401);
   });
+
+  it("accepts the key pasted as the whole OVERTURN_API_KEY= line (what Settings shows)", async () => {
+    for (const v of [ctx.apiKey, `OVERTURN_API_KEY=${ctx.apiKey}`, `"${ctx.apiKey}"`]) {
+      const r = await fetch(`${ctx.baseUrl}/v1/runs?limit=1`, { headers: { authorization: `Bearer ${v}` } });
+      expect(r.status).toBe(200);
+    }
+    const bad = await fetch(`${ctx.baseUrl}/v1/runs?limit=1`, {
+      headers: { authorization: "Bearer ov_live_nope" },
+    });
+    expect(bad.status).toBe(401);
+  });
 });

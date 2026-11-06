@@ -26,7 +26,13 @@ export class ApiKeyGuard implements CanActivate {
     const key =
       scheme?.toLowerCase() === "bearer" && token ? token : (req.headers["x-api-key"] as string | undefined);
     if (key) {
-      const auth = await this.keys.authenticate(key.trim());
+      // The Settings page shows a new key as `OVERTURN_API_KEY=ov_live_…`; people paste the whole line
+      // into the Zendesk app. Accept it rather than fail their first capture with a 401.
+      const bare = key
+        .trim()
+        .replace(/^OVERTURN_API_KEY=/, "")
+        .replace(/^["']|["']$/g, "");
+      const auth = await this.keys.authenticate(bare);
       if (!auth) throw new UnauthorizedException("Invalid or revoked API key");
       req.auth = auth;
       return true;
