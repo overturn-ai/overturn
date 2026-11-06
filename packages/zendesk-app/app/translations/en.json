@@ -3,6 +3,40 @@
     "name": "Overturn",
     "short_description": "QA for AI-drafted replies: untouched rate, fixes by reason, and a test before every model change.",
     "long_description": "Your agents already review every AI-drafted reply before it goes out. Overturn records what the AI wrote, what the agent sent and why it changed, with a one-click reason, whichever tool drafted the reply. You get the untouched rate and the fixes by reason, by team and by week (never a per-agent rate), and every fix replays as a regression test before the next model or prompt change. The app reads a ticket only after an AI draft appears in its reply box.",
-    "installation_instructions": "Create a project API key in Overturn (Settings → API keys) and paste it into the app settings. Set the workflow name (one suite per workflow). Optionally list the custom fields that carry the decision as id:label pairs, and a scope tag to limit which tickets are watched."
+    "installation_instructions": "Create a project API key in Overturn (Settings → API keys) and paste it into the app settings. Set the workflow name (one suite per workflow). Optionally list the custom fields that carry the decision as id:label pairs, and a scope tag to limit which tickets are watched.",
+    "parameters": {
+      "overturn_api_key": {
+        "label": "Overturn API key",
+        "helpText": "A project API key from Overturn (Settings → API keys). Stored by Zendesk, never sent to the browser."
+      },
+      "overturn_base_url": {
+        "label": "Overturn API URL",
+        "helpText": "Your Overturn API URL when self-hosting. Add its host to the app's domain allowlist."
+      },
+      "agent": {
+        "label": "Workflow name",
+        "helpText": "The workflow name. One regression suite per workflow."
+      },
+      "require_reason": {
+        "label": "Require a reason for changed replies",
+        "helpText": "Block the send until the agent picks a reason (one click) when they changed the draft. On by default: a changed decision without a reason is not a test."
+      },
+      "capture_internal_notes": {
+        "label": "Capture internal notes too",
+        "helpText": "Also capture internal notes, not only public replies."
+      },
+      "decision_fields": {
+        "label": "Decision fields",
+        "helpText": "Custom fields that are the decision, as id:label pairs, e.g. custom_field_123:status, custom_field_456:reserve. Changes to these are scored exactly."
+      },
+      "scope_tag": {
+        "label": "Scope tag",
+        "helpText": "Optional. Only tickets carrying this tag are watched; every other ticket is never read, not even the reply box. Without it, every ticket's reply box is watched but nothing else is read until an AI draft appears."
+      },
+      "min_draft_chars": {
+        "label": "Minimum draft length (characters)",
+        "helpText": "Text inserted into the reply box in one go, at least this long, counts as the draft."
+      }
+    }
   }
 }

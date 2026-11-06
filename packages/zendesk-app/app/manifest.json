@@ -24,7 +24,8 @@
       "type": "text",
       "secure": true,
       "required": true,
-      "helpText": "A project API key from Overturn (Settings → API keys). Stored by Zendesk, never sent to the browser."
+      "helpText": "A project API key from Overturn (Settings \u2192 API keys). Stored by Zendesk, never sent to the browser.",
+      "scopes": ["header"]
     },
     {
       "name": "overturn_base_url",
