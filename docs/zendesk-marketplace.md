@@ -1,6 +1,8 @@
 # Zendesk Marketplace listing (prep)
 
-Submission goes through the Zendesk partner account; this file is the copy to paste. Before submitting, set `"private": false` in `packages/zendesk-app/app/manifest.json`, rebuild (`pnpm --filter @overturn-ai/zendesk-app build`), and attach `dist/overturn-zendesk-app.zip`.
+Submission goes through the Zendesk partner account; this file is the copy to paste. The build emits two zips: `dist/overturn-zendesk-app.zip` (private upload) and `dist/overturn-zendesk-app-marketplace.zip` (same app, `"private": false`); both are attached to every GitHub release. Submit the marketplace zip.
+
+**Steps (partner account, ~20 min):** 1) developer.zendesk.com → sign in with shireen@overturn.run → Apps → Marketplace → *Submit an app*. 2) Upload the marketplace zip. 3) Paste the copy below. 4) Screenshots: the sidebar with a draft detected, the reason chips, the Capture page scorecard (1280×800 PNGs; `pnpm --filter @overturn-ai/web e2e` leaves them under `apps/web/test-results/`). 5) Pricing: free. 6) Submit; Zendesk review is 2–4 weeks and asks about what the app reads (answer is the *Review notes* section).
 
 **Name:** Overturn — QA for AI-drafted replies
 

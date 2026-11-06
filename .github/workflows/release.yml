@@ -93,7 +93,7 @@ jobs:
       - run: pnpm --filter @overturn-ai/shared build && pnpm --filter @overturn-ai/zendesk-app build
       - run: |
           git tag "v$V" && git push origin "v$V"
-          gh release create "v$V" --generate-notes --title "v$V" packages/zendesk-app/dist/overturn-zendesk-app.zip
+          gh release create "v$V" --generate-notes --title "v$V" packages/zendesk-app/dist/overturn-zendesk-app.zip packages/zendesk-app/dist/overturn-zendesk-app-marketplace.zip
         env:
           V: ${{ needs.version.outputs.version }}
           GH_TOKEN: ${{ github.token }}

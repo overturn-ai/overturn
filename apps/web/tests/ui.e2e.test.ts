@@ -172,6 +172,8 @@ describe("web UI", () => {
     expect(pageText).toMatch(/Baseline/);
     expect(pageText).toMatch(/Human correction/);
     await page.getByTestId("gate").waitFor();
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.screenshot({ path: "test-results/marketplace/replay-report.png" });
 
     // --- suppress from the report, see the count, restore from the list ---
     await page.getByTestId("suppress-case").first().click();
@@ -201,9 +203,47 @@ describe("web UI", () => {
       }),
     });
     expect(cap.status).toBe(201);
+    // A fortnight of sends so the scorecard screenshot below shows real numbers: 9 untouched, 3 changed.
+    const day = 86_400_000;
+    const sends = [
+      ...Array.from({ length: 9 }, (_, i) => ({
+        id: `u${i}`,
+        changed: false,
+        days: 13 - i,
+        secs: 20 + i * 7,
+      })),
+      { id: "c1", changed: true, days: 10, code: "wrong_coverage_decision" },
+      { id: "c2", changed: true, days: 6, code: "missed_exclusion" },
+      { id: "c3", changed: true, days: 2, code: "wrong_amount_or_date" },
+    ];
+    for (const sd of sends) {
+      const draft = `Thanks for the photos. The damage is covered under your policy (ref ${sd.id}). An adjuster will call within 5 business days.`;
+      const r = await fetch(`${ctx.baseUrl}/v1/capture`, {
+        method: "POST",
+        headers: { "content-type": "application/json", authorization: `Bearer ${ctx.apiKey}` },
+        body: JSON.stringify({
+          source: "zendesk",
+          externalId: `zd:e2e-${sd.id}`,
+          agent: "claims-reply",
+          actor: "ray@carrier.com",
+          context: [{ role: "customer", content: `Claim ${sd.id}: water damage after the storm.` }],
+          draft: { text: draft },
+          sent: {
+            text: sd.changed ? draft.replace("is covered", "is not covered: flood exclusion applies") : draft,
+          },
+          reasonCode: sd.changed ? sd.code : null,
+          secondsToSend: "secs" in sd ? sd.secs : 140,
+          metadata: { at: new Date(Date.now() - sd.days * day).toISOString() },
+        }),
+      });
+      expect(r.status).toBe(201);
+    }
     await page.goto("/capture");
     await page.getByText("storm sla is 2 days").waitFor({ timeout: 15_000 });
     expect(await page.getByTestId("capture-untouched").textContent()).toMatch(/\d+%/);
+    // Listing screenshots for the Zendesk Marketplace (docs/zendesk-marketplace.md) fall out of this run.
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.screenshot({ path: "test-results/marketplace/capture-scorecard.png" });
     // By-expert is off by default: no expert is named on the scorecard.
     expect(await page.textContent("main")).not.toContain("ray@carrier.com");
     await page.goto("/settings");
