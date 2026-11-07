@@ -1,16 +1,19 @@
 name: Sentry → fix PR
 
-# Sentry alert → webhook (repository_dispatch, event_type `sentry_issue`) → agent reads the trace → fix PR in <10 min → human approves.
-# Set up in Sentry: Alerts → create alert → action "Send a notification via an integration" → GitHub repository_dispatch (or an internal integration posting to
-# https://api.github.com/repos/<owner>/<repo>/dispatches with {"event_type":"sentry_issue","client_payload":{"issue_url":"<url>","issue_id":"<id>"}}).
+# Sentry issue → agent reads the trace → fix PR in <10 min → human approves.
+# Runs every 30 min and picks up unresolved issues first seen since the last run in org fluorine-nf, projects overturn-web,overturn-api
+# (an issue already carrying a PR link in its comments is skipped). Also accepts a repository_dispatch `sentry_issue` or a manual run with a URL.
+# Needs secrets: ANTHROPIC_API_KEY, SENTRY_AUTH_TOKEN (Sentry → Settings → Auth Tokens, scopes event:read project:read org:read event:write).
 on:
+  schedule:
+    - cron: "*/30 * * * *"   # poll Sentry for new issues (Sentry's webhooks cannot auth to GitHub directly)
   repository_dispatch:
     types: [sentry_issue]
   workflow_dispatch:
     inputs:
       issue_url:
-        description: Sentry issue URL
-        required: true
+        description: Sentry issue URL (empty = poll for new issues)
+        required: false
 
 permissions:
   contents: write
@@ -40,7 +43,8 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           claude_args: "--model claude-opus-5-5 --max-turns 80"
           prompt: |
-            Sentry issue: ${{ github.event.client_payload.issue_url || inputs.issue_url }}
-            Fetch it with the Sentry API (token in $SENTRY_AUTH_TOKEN, org/project in CLAUDE.md). Follow .claude/skills/bug-fix-pr/SKILL.md exactly: failing test first, smallest fix, PR titled `fix: <symptom> (SENTRY-<id>)`, label `agent-fix`, author Shireen Kadhium <shireenkadhium1@gmail.com>, no trailers. Ten-minute budget; past it, open a draft with findings and stop.
+            Sentry org: fluorine-nf. Projects: overturn-web,overturn-api. Token in $SENTRY_AUTH_TOKEN (Bearer, https://sentry.io/api/0/).
+            Issue: "${{ github.event.client_payload.issue_url || inputs.issue_url }}" — if empty, list unresolved issues in those projects with firstSeen in the last 40 minutes (GET /api/0/organizations/fluorine-nf/issues/?query=is:unresolved firstSeen:-40m&project=<id>), skip any whose comments already contain a github.com/.../pull/ link, and take the one with the most events. If there is none, print "no new Sentry issues" and stop.
+            Follow .claude/skills/bug-fix-pr/SKILL.md exactly: failing test first, smallest fix, PR titled `fix: <symptom> (SENTRY-<short id>)`, label `agent-fix`, author Shireen Kadhium <shireenkadhium1@gmail.com>, no trailers; then POST a comment on the Sentry issue with the PR link. Ten-minute budget; past it, open a draft with findings and stop.
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
