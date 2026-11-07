@@ -24,7 +24,7 @@
       "type": "text",
       "secure": true,
       "required": true,
-      "helpText": "A project API key from Overturn (Settings \u2192 API keys). Stored by Zendesk, never sent to the browser.",
+      "helpText": "A project API key from Overturn (Settings → API keys). Stored by Zendesk, never sent to the browser.",
       "scopes": ["header"]
     },
     {
@@ -40,6 +40,13 @@
       "required": false,
       "default": "claims-reply",
       "helpText": "The workflow name. One regression suite per workflow."
+    },
+    {
+      "name": "reason_pack",
+      "type": "text",
+      "required": false,
+      "default": "claims",
+      "helpText": "Which one-click reasons agents see when they change a draft: \"claims\" (coverage, reserve, exclusion...) or \"support\" (wrong answer, missing information, should have escalated...)."
     },
     {
       "name": "require_reason",

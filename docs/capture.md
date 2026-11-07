@@ -17,7 +17,7 @@ What the agent sees:
 
 - **Draft inserted · 112 words** once an AI assist, macro or paste lands in the reply box. A drafting agent that recorded its run with the SDK (`externalId: "zd:<ticket id>"`) is found automatically. "Use the current text as the draft" marks it by hand.
 - A **reason** picker with the claims pack's eight codes (listed below) and an optional note.
-- On **Submit**, sent as drafted is an approve (no prompt); changed is an edit, with the reason as the case title and the judge's rubric. `require_reason` blocks a changed reply until there is one.
+- On **Submit**, sent as drafted is an approve (no prompt); changed is an edit, with the reason as the case title and the judge's rubric. `reason_pack` (`claims` or `support`) picks the chips; `require_reason` blocks a changed reply until there is one.
 
 Overturn failing never blocks the send. The run page links back to the ticket.
 
@@ -49,7 +49,7 @@ Response: `{ kind: "edit", changed: true, changedFields: ["reserve"], runId, ste
 
 - `draft` and `sent` are `{ text, fields? }`. With fields, the frozen answer is `{ ...fields, reply: text }`: **fields are scored exactly, the prose by the judge**, so a rephrased paragraph is not a regression and a changed reserve is.
 - `draftRunId` attaches to a run the drafting agent recorded; otherwise the latest run on the same `externalId` and `agent` whose answer equals the draft is used; otherwise a run is synthesized with one model step whose prompt is the rendered thread.
-- `reasonCode` is why, as a code the scorecard counts. The claims pack ships eight: `wrong_coverage_decision`, `missed_exclusion`, `reserve_too_low`, `reserve_too_high`, `wrong_amount_or_date`, `missing_required_step`, `tone_wording`, `policy_exception`; any snake_case code is accepted. A `tone_wording` correction is kept as evidence but never enters the suite or the export, because a rephrase asserts nothing about the decision. The Zendesk app requires a code for every changed send by default (`require_reason`).
+- `reasonCode` is why, as a code the scorecard counts. The claims pack ships eight: `wrong_coverage_decision`, `missed_exclusion`, `reserve_too_low`, `reserve_too_high`, `wrong_amount_or_date`, `missing_required_step`, `tone_wording`, `policy_exception`; any snake_case code is accepted. A `tone_wording` correction is kept as evidence but never enters the suite or the export, because a rephrase asserts nothing about the decision. The Zendesk app requires a code for every changed send by default (`reason_pack` (`claims` or `support`) picks the chips; `require_reason`).
 - The same fix on the same thread twice merges into one case.
 
 SDKs and CLI:

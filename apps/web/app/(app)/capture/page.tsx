@@ -3,6 +3,8 @@
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useState } from "react";
+import { track } from "@/components/analytics/PostHogProvider";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, NativeSelect } from "@/components/ui/input";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
@@ -22,6 +24,38 @@ export default function CapturePage() {
   });
   const s = stats.data;
   const maxWeek = Math.max(1, ...(s?.weekly.map((w) => w.captures) ?? [1]));
+  const [copied, setCopied] = useState(false);
+
+  // The forwardable version: the three numbers and the reasons, as plain text the buyer can read
+  // in an email on a phone. This is the handoff from the installer to the person who pays.
+  const summary = s
+    ? [
+        `AI drafts, last ${days} days${agent ? ` (${agent})` : ""}`,
+        ``,
+        `Sent untouched: ${pct(s.untouchedRate)} (${s.untouched} of ${s.captures})`,
+        `Fixes kept: ${s.edited}`,
+        `Experts capturing: ${s.experts}`,
+        ``,
+        ...(s.byReason.length
+          ? ["Why drafts were changed:", ...s.byReason.map((r) => `  ${r.label}: ${r.count}`)]
+          : []),
+        ``,
+        `Every fix runs as a test before the next model or prompt change.`,
+        `${typeof window !== "undefined" ? window.location.origin : "https://app.overturn.run"}/capture`,
+      ].join("\n")
+    : "";
+  const forward = (how: "mail" | "copy") => {
+    track.scorecardForwarded();
+    if (how === "mail") {
+      const subject = `AI draft scorecard, last ${days} days: ${pct(s?.untouchedRate ?? 0)} sent untouched`;
+      window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(summary)}`;
+    } else {
+      void navigator.clipboard?.writeText(summary).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      });
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -34,6 +68,21 @@ export default function CapturePage() {
           </p>
         </div>
         <div className="flex items-end gap-2">
+          {s && s.captures > 0 ? (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => forward("copy")}
+                data-testid="copy-scorecard"
+              >
+                {copied ? "Copied" : "Copy summary"}
+              </Button>
+              <Button size="sm" onClick={() => forward("mail")} data-testid="forward-scorecard">
+                Send this week
+              </Button>
+            </>
+          ) : null}
           <Input
             placeholder="agent"
             className="w-40"

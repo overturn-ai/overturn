@@ -17,6 +17,10 @@
         "label": "Workflow name",
         "helpText": "The workflow name. One regression suite per workflow."
       },
+      "reason_pack": {
+        "label": "Reason pack",
+        "helpText": "Which one-click reasons agents see when they change a draft: \"claims\" (coverage, reserve, exclusion...) or \"support\" (wrong answer, missing information, should have escalated...)."
+      },
       "require_reason": {
         "label": "Require a reason for changed replies",
         "helpText": "Block the send until the agent picks a reason (one click) when they changed the draft. On by default: a changed decision without a reason is not a test."

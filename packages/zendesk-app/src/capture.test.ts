@@ -5,6 +5,7 @@ import {
   DEFAULT_SETTINGS,
   decideOnSend,
   inScope,
+  quickReasons,
   settingsFrom,
   statusLine,
   stripHtml,
@@ -58,6 +59,18 @@ describe("settings", () => {
     expect(scoped.scopeTag).toBe("ai_drafted");
     expect(inScope(["billing"], scoped)).toBe(false);
     expect(inScope(["billing", "ai_drafted"], scoped)).toBe(true);
+  });
+
+  it("reason_pack picks the chips: claims by default, support for any other team", () => {
+    expect(quickReasons(DEFAULT_SETTINGS).map((r) => r.code)).toContain("wrong_coverage_decision");
+    const support = settingsFrom({ reason_pack: "support" });
+    const codes = quickReasons(support).map((r) => r.code);
+    expect(codes).toContain("wrong_answer");
+    expect(codes).toContain("should_escalate");
+    expect(codes).not.toContain("reserve_too_low");
+    // both packs keep tone/wording so the suite exclusion applies to either
+    expect(codes).toContain("tone_wording");
+    expect(settingsFrom({ reason_pack: "garbage" }).reasonPack).toBe("claims");
   });
 
   it("falls back to defaults, with require_reason on", () => {

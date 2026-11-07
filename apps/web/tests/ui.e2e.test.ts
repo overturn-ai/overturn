@@ -241,6 +241,10 @@ describe("web UI", () => {
     await page.goto("/capture");
     await page.getByText("storm sla is 2 days").waitFor({ timeout: 15_000 });
     expect(await page.getByTestId("capture-untouched").textContent()).toMatch(/\d+%/);
+    // The handoff: the scorecard is forwardable as plain text (and the event fires).
+    await page.getByTestId("copy-scorecard").click();
+    await page.getByText("Copied").waitFor({ timeout: 5_000 });
+    expect(await page.getByTestId("forward-scorecard").getAttribute("data-testid")).toBe("forward-scorecard");
     // Listing screenshots for the Zendesk Marketplace (docs/zendesk-marketplace.md) fall out of this run.
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.screenshot({ path: "test-results/marketplace/capture-scorecard.png" });

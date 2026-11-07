@@ -97,10 +97,39 @@ export const CLAIMS_REASON_CODES = [
   { code: "policy_exception", label: "Policy exception" },
 ] as const;
 
+/** The support pack: why any support or ops agent changed an AI draft. Vendor- and domain-neutral. */
+export const SUPPORT_REASON_CODES = [
+  { code: "wrong_answer", label: "Wrong answer" },
+  { code: "missing_information", label: "Missing information" },
+  { code: "wrong_amount_or_date", label: "Wrong amount or date" },
+  { code: "missing_required_step", label: "Missing required step" },
+  { code: "against_policy", label: "Against policy" },
+  { code: "should_escalate", label: "Should have escalated" },
+  { code: "tone_wording", label: "Tone / wording" },
+  { code: "wrong_language_or_format", label: "Wrong language / format" },
+] as const;
+
+export type ReasonPack = "claims" | "support";
+export type ReasonCodeOption = { readonly code: string; readonly label: string };
+
+/** The quick-pick reasons an installer chooses from; one pack per workflow. */
+export const REASON_PACKS: Record<ReasonPack, readonly ReasonCodeOption[]> = {
+  claims: CLAIMS_REASON_CODES,
+  support: SUPPORT_REASON_CODES,
+};
+
+export function reasonPackFrom(raw: unknown): ReasonPack {
+  return raw === "support" ? "support" : "claims";
+}
+
 /** Corrections with these codes are kept as evidence but never enter the suite or the export. */
 export const SUITE_EXCLUDED_REASON_CODES: readonly string[] = ["tone_wording"];
 
 export function reasonCodeLabel(code: string | null | undefined): string | null {
   if (!code) return null;
-  return CLAIMS_REASON_CODES.find((c) => c.code === code)?.label ?? code.replace(/_/g, " ");
+  for (const pack of Object.values(REASON_PACKS)) {
+    const hit = pack.find((c) => c.code === code);
+    if (hit) return hit.label;
+  }
+  return code.replace(/_/g, " ");
 }

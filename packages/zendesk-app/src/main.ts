@@ -5,7 +5,7 @@ import {
   type DraftState,
   decideOnSend,
   inScope,
-  QUICK_REASONS,
+  quickReasons,
   settingsFrom,
   statusLine,
   type TicketSnapshot,
@@ -58,7 +58,7 @@ async function main(): Promise<void> {
   let reasonCode: string | null = null;
   const quick = el("div", { class: "quick", role: "radiogroup", "aria-label": "Why did you change it?" });
   const chips: HTMLButtonElement[] = [];
-  for (const q of QUICK_REASONS) {
+  for (const q of quickReasons(settings)) {
     const b = el(
       "button",
       { type: "button", class: "chip", "data-code": q.code },

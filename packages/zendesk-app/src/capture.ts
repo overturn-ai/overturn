@@ -1,9 +1,12 @@
 import type { CaptureAnswer, CaptureCreate, CaptureMessage } from "@overturn-ai/shared";
 import {
   CLAIMS_AGENTS,
-  CLAIMS_REASON_CODES,
   diffCaptureAnswers,
   normalizeCaptureText,
+  REASON_PACKS,
+  type ReasonCodeOption,
+  type ReasonPack,
+  reasonPackFrom,
 } from "@overturn-ai/shared/capture";
 
 /** What the app knows about the ticket, read through ZAF. */
@@ -40,6 +43,8 @@ export interface AppSettings {
   minDraftChars: number;
   /** When set, the app watches only tickets carrying this tag; every other ticket is never read. */
   scopeTag: string | null;
+  /** Which quick-pick reasons the agent sees: the claims pack or the vendor-neutral support pack. */
+  reasonPack: ReasonPack;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -50,6 +55,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   decisionFields: [],
   minDraftChars: 80,
   scopeTag: null,
+  reasonPack: "claims",
 };
 
 /** Parses the app's metadata settings (strings and booleans from the manifest). */
@@ -81,6 +87,7 @@ export function settingsFrom(raw: Record<string, unknown>): AppSettings {
     decisionFields: fields,
     minDraftChars: Number.isFinite(min) && min > 0 ? min : DEFAULT_SETTINGS.minDraftChars,
     scopeTag: str("scope_tag"),
+    reasonPack: reasonPackFrom(str("reason_pack")),
   };
 }
 
@@ -267,4 +274,7 @@ export function statusLine(
   return `Draft ${from} · ${words} words`;
 }
 
-export const QUICK_REASONS = CLAIMS_REASON_CODES;
+/** The chips the agent clicks, for the installed pack. */
+export function quickReasons(settings: AppSettings): readonly ReasonCodeOption[] {
+  return REASON_PACKS[settings.reasonPack];
+}
