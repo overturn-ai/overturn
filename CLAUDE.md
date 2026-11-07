@@ -8,7 +8,7 @@ Overturn (overturn.run, Apache-2.0) is the system of record for how a company co
 - Commands: `pnpm dev` · `pnpm test` · `pnpm typecheck` · `pnpm lint` (biome) · `pnpm build` · `pnpm db:migrate` · `pnpm quickstart:check` · `pnpm test:personas`. CI runs the README quickstart from a fresh clone — keep it true.
 - Decisions log: `docs/decisions.md` (one line of reasoning each, append-only). Read it before proposing architecture. `docs/plan.md` is the build brief with milestones.
 - Model keys never enter the build workspace; tests use the fake OpenAI server. Real-model runs happen in GitHub Actions / Railway from secrets.
-- Analytics: PostHog via `apps/web/components/analytics/PostHogProvider.tsx` (`track.*`). Errors: Sentry via `apps/web/instrumentation*.ts`. Both no-op without env keys.
+- Analytics: PostHog via `apps/web/components/analytics/PostHogProvider.tsx` (`track.*`). Errors: Sentry org `fluorine-nf`, projects `overturn-web` (apps/web, `instrumentation*.ts`) and `overturn-api` (apps/api, `SENTRY_DSN` env on Railway). PostHog org "Overturn", project 716714. Production web keys are baked in as defaults; previews need env.
 
 ## How work flows (the pipeline — do not skip steps)
 0. Ideas come from the `idea-sourcing` skill (complaints, ideabrowser.com, competitor changelogs, voice notes). Agents that need their own computer run on Orgo (`orgo` MCP) — only when a job needs a desktop, not by default.

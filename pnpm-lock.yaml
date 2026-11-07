@@ -65,6 +65,9 @@ importers:
       '@overturn-ai/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@sentry/node':
+        specifier: ^11.11.0
+        version: 11.11.0(rollup@4.64.7)
       ai:
         specifier: ^5.0.277
         version: 5.0.277(zod@4.6.7)

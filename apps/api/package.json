@@ -27,6 +27,7 @@
     "@openrouter/ai-sdk-provider": "^1.5.4",
     "@opentelemetry/otlp-transformer": "0.57.0",
     "@overturn-ai/shared": "workspace:*",
+    "@sentry/node": "^11.11.0",
     "ai": "^5.0.277",
     "drizzle-orm": "^0.44.7",
     "fastify": "^5.11.3",

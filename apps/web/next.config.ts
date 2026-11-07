@@ -9,8 +9,8 @@ const config: NextConfig = {
 
 // Sentry is a no-op until SENTRY_DSN / NEXT_PUBLIC_SENTRY_DSN are set; source maps upload only with SENTRY_AUTH_TOKEN.
 export default withSentryConfig(config, {
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
+  org: process.env.SENTRY_ORG ?? "fluorine-nf",
+  project: process.env.SENTRY_PROJECT ?? "overturn-web",
   authToken: process.env.SENTRY_AUTH_TOKEN,
   silent: !process.env.CI,
   widenClientFileUpload: true,
