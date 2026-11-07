@@ -1,0 +1,77 @@
+name: CI failure → fix PR
+
+# Fires when CI, the persona tests, or a production deployment fails on main. The agent reads the failing log,
+# opens the smallest fix PR (or a draft with findings), and texts Shireen. Needs ANTHROPIC_API_KEY, AGENT_NOTIFY_SECRET.
+on:
+  workflow_run:
+    workflows: ["CI", "Persona tests on preview", "README quickstart from a fresh clone", "API tests"]
+    types: [completed]
+    branches: [main]
+  deployment_status:
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+  id-token: write
+
+concurrency:
+  group: ci-fix-${{ github.event.workflow_run.id || github.event.deployment.id }}
+  cancel-in-progress: false
+
+jobs:
+  fix:
+    if: >
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'failure' && github.event.workflow_run.name != 'CI failure → fix PR') ||
+      (github.event_name == 'deployment_status' && (github.event.deployment_status.state == 'failure' || github.event.deployment_status.state == 'error'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Collect the failure
+        id: fail
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_run" ]; then
+            echo "what=${{ github.event.workflow_run.name }} run ${{ github.event.workflow_run.html_url }}" >> "$GITHUB_OUTPUT"
+            gh run view ${{ github.event.workflow_run.id }} --log-failed 2>/dev/null | tail -300 > failure.log || echo "(log unavailable)" > failure.log
+          else
+            echo "what=deployment to ${{ github.event.deployment.environment }} ${{ github.event.deployment_status.target_url }}" >> "$GITHUB_OUTPUT"
+            echo "Deployment ${{ github.event.deployment.environment }} failed: ${{ github.event.deployment_status.description }} ${{ github.event.deployment_status.target_url }}" > failure.log
+          fi
+      - run: |
+          git config user.name "Shireen Kadhium"
+          git config user.email "shireenkadhium1@gmail.com"
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          claude_args: "--model claude-opus-5-5 --max-turns 80"
+          prompt: |
+            Something failed on main: ${{ steps.fail.outputs.what }}. The failing log is in ./failure.log (read it first). Read CLAUDE.md.
+            Decide in one minute whether this is (a) a code or config regression you can fix, (b) flaky infrastructure, or (c) a missing secret / external outage.
+            (a) Follow .claude/skills/bug-fix-pr/SKILL.md: failing test first if possible, smallest fix, branch fix/ci-<short>, PR titled `fix: <what broke>`, label agent-fix, author Shireen Kadhium <shireenkadhium1@gmail.com>, no trailers. Run the relevant package tests before opening.
+            (b) Re-run the failed workflow once with `gh run rerun --failed` and stop.
+            (c) Open nothing; write a 3-line explanation to ./needs-human.txt naming the secret or service.
+            Never touch .env files, never force-push, never merge. Twenty-minute budget; past it, open a draft PR with findings.
+      - name: Text Shireen
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NOTIFY_SECRET: ${{ secrets.AGENT_NOTIFY_SECRET }}
+          PRODUCT: Overturn
+        run: |
+          [ -n "$NOTIFY_SECRET" ] || { echo "AGENT_NOTIFY_SECRET unset; skipping text"; exit 0; }
+          since=$(date -u -d "-30 minutes" +%Y-%m-%dT%H:%M:%SZ)
+          prs=$(gh pr list --state open --label agent-fix --search "created:>=$since" --json number,title,isDraft --jq '.[] | "#\(.number)\(if .isDraft then " (draft)" else "" end) \(.title)"' | head -3 | tr '\n' ';' | sed 's/;$//')
+          if [ -n "$prs" ]; then text="$PRODUCT: ${{ steps.fail.outputs.what }} failed. Fix PR: $prs — ${{ github.server_url }}/${{ github.repository }}/pulls";
+          elif [ -f needs-human.txt ]; then text="$PRODUCT: ${{ steps.fail.outputs.what }} failed and needs you. $(head -c 240 needs-human.txt | tr '\n' ' ')";
+          else text="$PRODUCT: ${{ steps.fail.outputs.what }} failed; agent re-ran it or found nothing to fix. ${{ github.event.workflow_run.html_url || github.event.deployment_status.target_url }}"; fi
+          curl -fsS -X POST https://trytare.ai/api/agentphone/notify -H "Authorization: Bearer $NOTIFY_SECRET" -H "Content-Type: application/json" \
+            --data "$(jq -cn --arg t "$text" --arg p "$PRODUCT" '{text:$t, product:($p|ascii_downcase)}')" || echo "notify failed (non-fatal)"
