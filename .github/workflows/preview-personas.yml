@@ -1,0 +1,33 @@
+name: Persona tests on preview
+
+# Runs the three first-time-user personas (impatient / confused / phone) against the PR's preview deployment.
+on:
+  deployment_status:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  personas:
+    if: github.event.deployment_status.state == 'success' && github.event.deployment.environment != 'Production'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      BASE_URL: ${{ github.event.deployment_status.environment_url || github.event.deployment_status.target_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: npx playwright install --with-deps chromium
+      - run: pnpm test:personas
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: persona-screens
+          path: tests/personas/__screens__
+          if-no-files-found: ignore

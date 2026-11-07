@@ -1,0 +1,140 @@
+{
+  "mcpServers": {
+    "context7": {
+      "type": "http",
+      "url": "https://mcp.context7.com/mcp",
+      "headers": {
+        "CONTEXT7_API_KEY": "${CONTEXT7_API_KEY:-}"
+      }
+    },
+    "exa": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "exa-mcp-server"
+      ],
+      "env": {
+        "EXA_API_KEY": "${EXA_API_KEY}"
+      }
+    },
+    "firecrawl": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "firecrawl-mcp"
+      ],
+      "env": {
+        "FIRECRAWL_API_KEY": "${FIRECRAWL_API_KEY}"
+      }
+    },
+    "apify": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@apify/actors-mcp-server"
+      ],
+      "env": {
+        "APIFY_TOKEN": "${APIFY_TOKEN}"
+      }
+    },
+    "linear": {
+      "type": "http",
+      "url": "https://mcp.linear.app/mcp"
+    },
+    "github": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/"
+    },
+    "sentry": {
+      "type": "http",
+      "url": "https://mcp.sentry.dev/mcp"
+    },
+    "posthog": {
+      "type": "http",
+      "url": "https://mcp.posthog.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${POSTHOG_PERSONAL_API_KEY}"
+      }
+    },
+    "stripe": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@stripe/mcp",
+        "--tools=all"
+      ],
+      "env": {
+        "STRIPE_SECRET_KEY": "${STRIPE_SECRET_KEY}"
+      }
+    },
+    "postgres": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@bytebase/dbhub",
+        "--transport",
+        "stdio",
+        "--dsn",
+        "${DATABASE_URL}"
+      ]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@latest",
+        "--headless"
+      ]
+    },
+    "chrome-devtools": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@latest"
+      ]
+    },
+    "lightpanda": {
+      "command": "${HOME}/.local/bin/lightpanda",
+      "args": [
+        "mcp"
+      ]
+    },
+    "paper": {
+      "type": "http",
+      "url": "http://127.0.0.1:29979/mcp"
+    },
+    "headroom": {
+      "command": "headroom",
+      "args": [
+        "mcp"
+      ]
+    },
+    "agentmail": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "agentmail-mcp"
+      ],
+      "env": {
+        "AGENTMAIL_API_KEY": "${AGENTMAIL_API_KEY}"
+      }
+    },
+    "agentphone": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "agentphone-mcp"
+      ],
+      "env": {
+        "AGENTPHONE_API_KEY": "${AGENTPHONE_API_KEY}"
+      }
+    },
+    "railway": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@railway/mcp-server"
+      ]
+    }
+  }
+}

@@ -16,3 +16,10 @@ __pycache__/
 .DS_Store
 overturn-report.*
 *.tsbuildinfo
+
+# agent research pulls (summaries live in docs/wiki)
+research/
+tests/personas/__screens__
+tests/personas/__report__
+test-results/
+.claude/settings.local.json

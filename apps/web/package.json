@@ -18,28 +18,30 @@
     "@radix-ui/react-select": "^2.1.0",
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-tabs": "^1.1.0",
+    "@sentry/nextjs": "^11.11.0",
     "@tanstack/react-query": "^5.90.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.577.0",
     "next": "^15.5.0",
+    "posthog-js": "^1.447.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "tailwind-merge": "^3.3.0"
   },
   "devDependencies": {
     "@overturn-ai/api": "workspace:*",
+    "@overturn-ai/example-ticket-triage": "workspace:*",
+    "@overturn-ai/sdk": "workspace:*",
     "@tailwindcss/postcss": "^4.1.0",
     "@types/node": "^22.20.5",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
+    "openai": "^5.23.2",
     "playwright": "^1.64.0",
     "tailwindcss": "^4.1.0",
+    "tsx": "^4.23.0",
     "typescript": "^5.9.3",
-    "vitest": "^3.2.7",
-    "@overturn-ai/sdk": "workspace:*",
-    "@overturn-ai/example-ticket-triage": "workspace:*",
-    "openai": "^5.23.2",
-    "tsx": "^4.23.0"
+    "vitest": "^3.2.7"
   }
 }

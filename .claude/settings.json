@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "includeCoAuthoredBy": false,
+  "enableAllProjectMcpServers": true,
+  "env": {
+    "ENABLE_LSP_TOOL": "1",
+    "GIT_AUTHOR_NAME": "Shireen Kadhium",
+    "GIT_AUTHOR_EMAIL": "shireenkadhium1@gmail.com",
+    "GIT_COMMITTER_NAME": "Shireen Kadhium",
+    "GIT_COMMITTER_EMAIL": "shireenkadhium1@gmail.com"
+  },
+  "extraKnownMarketplaces": {
+    "claude-code-plugins": { "source": { "source": "github", "repo": "anthropics/claude-code" } },
+    "wshobson": { "source": { "source": "github", "repo": "wshobson/agents" } },
+    "paper": { "source": { "source": "github", "repo": "paper-design/agent-plugins" } },
+    "mattpocock": { "source": { "source": "github", "repo": "mattpocock/skills" } }
+  },
+  "enabledPlugins": {
+    "typescript-lsp@claude-plugins-official": true,
+    "security-guidance@claude-code-plugins": true,
+    "paper-desktop@paper": true
+  },
+  "permissions": {
+    "allow": [
+      "Bash(pnpm *)", "Bash(npx tsc *)", "Bash(npx vitest *)", "Bash(npx playwright *)", "Bash(npx biome *)",
+      "Bash(git status*)", "Bash(git diff*)", "Bash(git log*)", "Bash(git add *)", "Bash(git commit *)", "Bash(git checkout -b *)", "Bash(git switch *)", "Bash(git push -u origin *)", "Bash(git worktree *)",
+      "Bash(gh pr *)", "Bash(gh issue *)", "Bash(gh run *)",
+      "Bash(headroom *)", "Bash(lightpanda *)"
+    ],
+    "deny": [
+      "Read(./.env)", "Read(./.env.*)", "Read(./apps/web/.env)", "Read(./apps/web/.env.*)", "Read(./apps/api/.env)",
+      "Bash(git push --force*)", "Bash(git push -f*)", "Bash(git reset --hard*)", "Bash(rm -rf *)",
+      "Bash(curl * | sh)", "Bash(curl * | bash)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      { "matcher": "Edit|Write|MultiEdit", "hooks": [ { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/security-check.sh", "timeout": 10 } ] }
+    ],
+    "PostToolUse": [
+      { "matcher": "Edit|Write|MultiEdit", "hooks": [ { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/post-edit-check.sh", "timeout": 120 } ] }
+    ],
+    "Stop": [
+      { "hooks": [ { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/nightly-log.sh", "timeout": 10 } ] }
+    ]
+  }
+}

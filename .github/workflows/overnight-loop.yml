@@ -1,0 +1,57 @@
+name: Overnight agent loop
+
+# Picks up Linear issues labelled `agent-ready`, builds each in its own branch, opens a PR.
+# Shireen checks what shipped over coffee. Needs secrets: ANTHROPIC_API_KEY, LINEAR_API_KEY.
+on:
+  schedule:
+    - cron: "17 1 * * 1-5"   # 01:17 UTC, weeknights
+  workflow_dispatch:
+    inputs:
+      issue:
+        description: "Linear issue identifier to build (e.g. TAR-42). Empty = all agent-ready."
+        required: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+
+concurrency:
+  group: overnight-loop
+  cancel-in-progress: false
+
+jobs:
+  loop:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Git identity
+        run: |
+          git config user.name "Shireen Kadhium"
+          git config user.email "shireenkadhium1@gmail.com"
+      - name: Run the loop
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          claude_args: "--model claude-opus-5-5 --max-turns 200"
+          prompt: |
+            You are the overnight build loop for this repo. Read CLAUDE.md first.
+
+            1. Query Linear (API key in $LINEAR_API_KEY, GraphQL at https://api.linear.app/graphql) for issues in this product's team with label `agent-ready` and state Todo. ${{ inputs.issue && format('Only build {0}.', inputs.issue) || 'Take up to 3, smallest estimate first.' }}
+            2. For each: move it to In Progress; branch `agent/<identifier>-<slug>` from main; build it per the spec's "Done when"; run the package tests and typecheck; if UI changed, run `pnpm test:personas` against a local dev server. Run the judge subagent — under 8 goes back, max 3 rounds.
+            3. Commit as Shireen Kadhium <shireenkadhium1@gmail.com> with NO Co-Authored-By, Claude-Session or "Generated with" lines. Open a PR with `gh pr create` (draft if judge < 8 or any blocker from personas), body per the writing-voice skill, link the Linear issue. Move the issue to In Review with the PR link.
+            4. Append the nightly log (docs/wiki/log/<date>.md) on main via a separate tiny PR `chore: nightly log <date>`.
+            Stop when done or at 3.5 hours. Never touch .env files, never force-push, never merge.
+        env:
+          LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
