@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, Label, NativeSelect } from "@/components/ui/input";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
-import { client } from "@/lib/api";
+import { client, setCurrentProjectId } from "@/lib/api";
 import { ago } from "@/lib/utils";
 
 const SCORERS = [
@@ -28,6 +28,7 @@ export default function SettingsPage() {
   const [newKey, setNewKey] = useState<{ name: string; key: string } | null>(null);
   const [keyName, setKeyName] = useState("default");
   const [email, setEmail] = useState("");
+  const [projectName, setProjectName] = useState("");
   type Form = {
     name: string;
     defaultScorer: string;
@@ -57,6 +58,15 @@ export default function SettingsPage() {
   const revoke = useMutation({
     mutationFn: (id: string) => client.keys.revoke(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["api-keys"] }),
+  });
+  const createProject = useMutation({
+    mutationFn: () => client.projects.create(projectName),
+    onSuccess: (p) => {
+      // Switch to it: the project switcher appears once there is more than one.
+      setCurrentProjectId(p.id);
+      qc.clear();
+      window.location.href = "/settings";
+    },
   });
   const addMember = useMutation({
     mutationFn: () => client.members.add(email),
@@ -457,6 +467,40 @@ export default function SettingsPage() {
               ))}
             </TBody>
           </Table>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Projects</CardTitle>
+          <CardDescription>
+            A project is one correction record, one suite, one set of API keys. Add one for a demo tenant or a
+            second team; switch between them in the header. Owners only.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <form
+            className="flex flex-wrap gap-2"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (projectName.trim()) createProject.mutate();
+            }}
+          >
+            <Input
+              className="w-72 max-w-full"
+              value={projectName}
+              onChange={(e) => setProjectName(e.target.value)}
+              placeholder="claims-demo"
+              data-testid="new-project-name"
+            />
+            <Button
+              type="submit"
+              disabled={createProject.isPending || !projectName.trim()}
+              data-testid="create-project"
+            >
+              Create project
+            </Button>
+          </form>
+          {createProject.error && <p className="text-sm text-destructive">{createProject.error.message}</p>}
         </CardContent>
       </Card>
     </div>

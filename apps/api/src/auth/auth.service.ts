@@ -1,5 +1,13 @@
 import { createHash, randomBytes } from "node:crypto";
-import { BadRequestException, Inject, Injectable, Logger, UnauthorizedException } from "@nestjs/common";
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  Logger,
+  UnauthorizedException,
+} from "@nestjs/common";
 import { and, eq, gt, isNull } from "drizzle-orm";
 import { v7 as uuidv7 } from "uuid";
 import { APP_CONFIG, type AppConfig } from "../config";
@@ -152,6 +160,37 @@ export class AuthService {
       .innerJoin(projects, eq(projects.organizationId, organizations.id))
       .where(eq(memberships.userId, userId))
       .orderBy(organizations.name, projects.name);
+  }
+
+  /**
+   * A second (third, …) project in an organization the user owns: a demo tenant, a staging suite,
+   * a separate team. Owners only; a member sees the org's projects but does not create them.
+   */
+  async createProject(
+    userId: string,
+    organizationId: string,
+    rawName: string,
+  ): Promise<{ id: string; name: string; slug: string }> {
+    const name = rawName.trim();
+    const [m] = await this.db
+      .select({ role: memberships.role })
+      .from(memberships)
+      .where(and(eq(memberships.userId, userId), eq(memberships.organizationId, organizationId)))
+      .limit(1);
+    if (!m) throw new UnauthorizedException("You are not a member of that organization");
+    if (m.role !== "owner") throw new ForbiddenException("Only an organization owner can create projects");
+    const slug = slugify(name);
+    const [clash] = await this.db
+      .select({ id: projects.id })
+      .from(projects)
+      .where(and(eq(projects.organizationId, organizationId), eq(projects.slug, slug)))
+      .limit(1);
+    if (clash) throw new ConflictException(`A project named "${name}" already exists in this workspace`);
+    const [row] = await this.db
+      .insert(projects)
+      .values({ id: uuidv7(), organizationId, name, slug })
+      .returning({ id: projects.id, name: projects.name, slug: projects.slug });
+    return row!;
   }
 
   /** AuthContext for a session user on a project they belong to (or their first project). */

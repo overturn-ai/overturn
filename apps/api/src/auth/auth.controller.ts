@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpException,
@@ -28,6 +29,7 @@ const byIp = new RateLimiter(30, 10 * 60_000);
 
 const emailSchema = z.object({ email: z.string().min(3).max(320) });
 const keyCreateSchema = z.object({ name: z.string().min(1).max(100).default("default") });
+const projectCreateSchema = z.object({ name: z.string().trim().min(1).max(60) });
 const memberCreateSchema = z.object({
   email: z.string().min(3).max(320),
   role: z.enum(["owner", "member"]).default("member"),
@@ -163,6 +165,19 @@ export class AuthController {
   @HttpCode(204)
   async removeMember(@Auth() auth: AuthContext, @Param("id", zod(z.uuid())) id: string): Promise<void> {
     await this.auth.removeMember(auth.organizationId, id, auth.user?.id ?? "");
+  }
+
+  /** A new project in the signed-in user's organization (owners only). Session auth, not API keys. */
+  @Post("projects")
+  @UseGuards(ApiKeyGuard)
+  @HttpCode(201)
+  async createProject(
+    @Auth() auth: AuthContext,
+    @Body(zod(projectCreateSchema)) body: z.infer<typeof projectCreateSchema>,
+  ) {
+    if (!auth.user)
+      throw new ForbiddenException("Sign in to create a project; API keys are scoped to one project");
+    return this.auth.createProject(auth.user.id, auth.organizationId, body.name);
   }
 
   /** Convenience for the web app's project switcher. */

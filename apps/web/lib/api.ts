@@ -189,6 +189,10 @@ export const client = {
       api<{ id: string; key: string; prefix: string }>("POST", "/v1/api-keys", { name }),
     revoke: (id: string) => api<void>("DELETE", `/v1/api-keys/${id}`),
   },
+  projects: {
+    create: (name: string) =>
+      api<{ id: string; name: string; slug: string }>("POST", "/v1/projects", { name }),
+  },
   members: {
     list: () =>
       api<Array<{ id: string; email: string; name: string | null; role: string; createdAt: string }>>(

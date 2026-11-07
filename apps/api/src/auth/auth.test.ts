@@ -217,4 +217,68 @@ describe("magic-link auth", () => {
     });
     expect(bad.status).toBe(401);
   });
+
+  it("an owner creates a second project; keys and captures stay scoped to it; members cannot create", async () => {
+    const owner = await signIn("second@example.com");
+    const created = await fetch(`${ctx.baseUrl}/v1/projects`, {
+      method: "POST",
+      headers: { cookie: owner, "content-type": "application/json" },
+      body: JSON.stringify({ name: "claims-demo" }),
+    });
+    expect(created.status).toBe(201);
+    const project = (await created.json()) as { id: string; name: string; slug: string };
+    expect(project.slug).toBe("claims-demo");
+
+    // the switcher lists both; the new one is selectable and empty
+    const session = (await (
+      await fetch(`${ctx.baseUrl}/v1/auth/session`, { headers: { cookie: owner } })
+    ).json()) as { projects: Array<{ id: string; name: string }> };
+    expect(session.projects.map((p) => p.name).sort()).toEqual(["claims-demo", "default"]);
+    const key = await fetch(`${ctx.baseUrl}/v1/api-keys`, {
+      method: "POST",
+      headers: { cookie: owner, "content-type": "application/json", "x-overturn-project": project.id },
+      body: JSON.stringify({ name: "seed" }),
+    });
+    expect(key.status).toBe(201);
+    const { key: apiKey } = (await key.json()) as { key: string };
+    const me = (await (
+      await fetch(`${ctx.baseUrl}/v1/me`, { headers: { authorization: `Bearer ${apiKey}` } })
+    ).json()) as { project: { id: string } };
+    expect(me.project.id).toBe(project.id);
+
+    // same name twice is a conflict; an API key cannot create projects; a member cannot either
+    expect(
+      (
+        await fetch(`${ctx.baseUrl}/v1/projects`, {
+          method: "POST",
+          headers: { cookie: owner, "content-type": "application/json" },
+          body: JSON.stringify({ name: "Claims Demo" }),
+        })
+      ).status,
+    ).toBe(409);
+    expect(
+      (
+        await fetch(`${ctx.baseUrl}/v1/projects`, {
+          method: "POST",
+          headers: { authorization: `Bearer ${apiKey}`, "content-type": "application/json" },
+          body: JSON.stringify({ name: "x" }),
+        })
+      ).status,
+    ).toBe(403);
+    await fetch(`${ctx.baseUrl}/v1/members`, {
+      method: "POST",
+      headers: { cookie: owner, "content-type": "application/json" },
+      body: JSON.stringify({ email: "junior@example.com" }),
+    });
+    const junior = await signIn("junior@example.com");
+    expect(
+      (
+        await fetch(`${ctx.baseUrl}/v1/projects`, {
+          method: "POST",
+          headers: { cookie: junior, "content-type": "application/json" },
+          body: JSON.stringify({ name: "nope" }),
+        })
+      ).status,
+    ).toBe(403);
+  });
 });
