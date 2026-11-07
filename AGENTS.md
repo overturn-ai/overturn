@@ -36,7 +36,7 @@ overturn.run hero → quickstart → sign in · `/login` magic link · `/runs` �
 Eval/observability: Braintrust, LangSmith, Langfuse, Arize Phoenix, Humanloop, Helicone — we integrate/export, we do not compete on "better evals". Support QA: Zendesk QA (ex-Klaus), MaestroQA, Loris, EvaluAgent, Assembled, Gorgias Automate, Fin/Intercom. Claims AI: Sixfold, Gradient AI, Shift Technology, Snapsheet. Subreddits/communities: r/MachineLearning, r/LangChain, r/Zendesk, r/CustomerSuccess, Support Driven Slack, Insurance Nerds. Review sources: G2 for Zendesk QA / MaestroQA / Braintrust; Zendesk Marketplace reviews. Our wedge: capture the correction where the human makes it, neutral across vendors, correction record as the core object, customer-owned model as the moat.
 
 ## Agent identities
-Inbox: overturn@agentmail.to (AgentMail MCP) — research/ops email goes from here; founder outreach stays on shireen@overturn.run (YAMM). Phone: AgentPhone MCP once `AGENTPHONE_API_KEY` is set.
+Inbox: overturn@agentmail.to (AgentMail MCP) — research/ops email goes from here; founder outreach stays on shireen@overturn.run (YAMM). Phone: AgentPhone. Texting Shireen from CI goes through `https://trytare.ai/api/agentphone/notify` with `AGENT_NOTIFY_SECRET` (the SMS agent itself lives in the Tare repo); local sessions use the AgentPhone MCP directly.
 
 ## Memory
 `docs/wiki/` is the git-backed wiki (works with akitaonrails/ai-memory pointed at it): `mistakes.md`, `glossary.md`, `competitors.md`, `log/`, `funnel/`, `churn/`. Architecture decisions stay in `docs/decisions.md`. Append; don't rewrite history.

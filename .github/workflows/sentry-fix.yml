@@ -3,7 +3,7 @@ name: Sentry → fix PR
 # Sentry issue → agent reads the trace → fix PR in <10 min → human approves.
 # Runs every 30 min and picks up unresolved issues first seen since the last run in org fluorine-nf, projects overturn-web,overturn-api
 # (an issue already carrying a PR link in its comments is skipped). Also accepts a repository_dispatch `sentry_issue` or a manual run with a URL.
-# Needs secrets: ANTHROPIC_API_KEY, SENTRY_AUTH_TOKEN (Sentry → Settings → Auth Tokens, scopes event:read project:read org:read event:write).
+# Needs secrets: ANTHROPIC_API_KEY, SENTRY_AUTH_TOKEN, AGENT_NOTIFY_SECRET (texts Shireen via trytare.ai/api/agentphone/notify) (Sentry → Settings → Auth Tokens, scopes event:read project:read org:read event:write).
 on:
   schedule:
     - cron: "*/30 * * * *"   # poll Sentry for new issues (Sentry's webhooks cannot auth to GitHub directly)
@@ -48,3 +48,18 @@ jobs:
             Follow .claude/skills/bug-fix-pr/SKILL.md exactly: failing test first, smallest fix, PR titled `fix: <symptom> (SENTRY-<short id>)`, label `agent-fix`, author Shireen Kadhium <shireenkadhium1@gmail.com>, no trailers; then POST a comment on the Sentry issue with the PR link. Ten-minute budget; past it, open a draft with findings and stop.
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      - name: Text Shireen about PRs this run opened
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NOTIFY_SECRET: ${{ secrets.AGENT_NOTIFY_SECRET }}
+          PRODUCT: Overturn
+        run: |
+          [ -n "$NOTIFY_SECRET" ] || { echo "AGENT_NOTIFY_SECRET unset; skipping text"; exit 0; }
+          since=$(date -u -d "-4 hours" +%Y-%m-%dT%H:%M:%SZ)
+          prs=$(gh pr list --state open --search "created:>=$since author:app/github-actions" --json number,title,isDraft --jq '.[] | "#\(.number)\(if .isDraft then " (draft)" else "" end) \(.title)"' | head -5)
+          [ -n "$prs" ] || prs=$(gh pr list --state open --search "created:>=$since" --json number,title,isDraft --jq '.[] | "#\(.number)\(if .isDraft then " (draft)" else "" end) \(.title)"' | head -5)
+          [ -n "$prs" ] || { echo "no PRs opened this run"; exit 0; }
+          text="$PRODUCT fix PR: $(echo "$prs" | tr '\n' ';' | sed 's/;$//'). Review: ${{ github.server_url }}/${{ github.repository }}/pulls"
+          curl -fsS -X POST https://trytare.ai/api/agentphone/notify -H "Authorization: Bearer $NOTIFY_SECRET" -H "Content-Type: application/json" \
+            --data "$(jq -cn --arg t "$text" '{text:$t}')" || echo "notify failed (non-fatal)"

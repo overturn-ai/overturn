@@ -55,3 +55,18 @@ jobs:
             Stop when done or at 3.5 hours. Never touch .env files, never force-push, never merge.
         env:
           LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+      - name: Text Shireen about PRs this run opened
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NOTIFY_SECRET: ${{ secrets.AGENT_NOTIFY_SECRET }}
+          PRODUCT: Overturn
+        run: |
+          [ -n "$NOTIFY_SECRET" ] || { echo "AGENT_NOTIFY_SECRET unset; skipping text"; exit 0; }
+          since=$(date -u -d "-4 hours" +%Y-%m-%dT%H:%M:%SZ)
+          prs=$(gh pr list --state open --search "created:>=$since author:app/github-actions" --json number,title,isDraft --jq '.[] | "#\(.number)\(if .isDraft then " (draft)" else "" end) \(.title)"' | head -5)
+          [ -n "$prs" ] || prs=$(gh pr list --state open --search "created:>=$since" --json number,title,isDraft --jq '.[] | "#\(.number)\(if .isDraft then " (draft)" else "" end) \(.title)"' | head -5)
+          [ -n "$prs" ] || { echo "no PRs opened this run"; exit 0; }
+          text="$PRODUCT overnight: $(echo "$prs" | tr '\n' ';' | sed 's/;$//'). Review: ${{ github.server_url }}/${{ github.repository }}/pulls"
+          curl -fsS -X POST https://trytare.ai/api/agentphone/notify -H "Authorization: Bearer $NOTIFY_SECRET" -H "Content-Type: application/json" \
+            --data "$(jq -cn --arg t "$text" '{text:$t}')" || echo "notify failed (non-fatal)"
