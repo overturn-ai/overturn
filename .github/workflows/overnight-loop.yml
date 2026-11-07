@@ -69,4 +69,4 @@ jobs:
           [ -n "$prs" ] || { echo "no PRs opened this run"; exit 0; }
           text="$PRODUCT overnight: $(echo "$prs" | tr '\n' ';' | sed 's/;$//'). Review: ${{ github.server_url }}/${{ github.repository }}/pulls"
           curl -fsS -X POST https://trytare.ai/api/agentphone/notify -H "Authorization: Bearer $NOTIFY_SECRET" -H "Content-Type: application/json" \
-            --data "$(jq -cn --arg t "$text" '{text:$t}')" || echo "notify failed (non-fatal)"
+            --data "$(jq -cn --arg t "$text" --arg p "$PRODUCT" '{text:$t, product:($p|ascii_downcase)}')" || echo "notify failed (non-fatal)"
