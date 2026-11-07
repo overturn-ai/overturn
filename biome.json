@@ -13,7 +13,8 @@
       "!apps/docs/.astro",
       "!apps/docs/src/content/docs",
       "!apps/docs/site",
-      "!apps/docs/dist"
+      "!apps/docs/dist",
+      "!.claude/**"
     ]
   },
   "formatter": {
@@ -46,7 +47,9 @@
   },
   "overrides": [
     {
-      "includes": ["apps/api/**"],
+      "includes": [
+        "apps/api/**"
+      ],
       "linter": {
         "rules": {
           "style": {
@@ -62,7 +65,9 @@
       }
     },
     {
-      "includes": ["apps/web/**"],
+      "includes": [
+        "apps/web/**"
+      ],
       "linter": {
         "rules": {
           "a11y": {

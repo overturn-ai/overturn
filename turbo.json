@@ -2,15 +2,30 @@
   "$schema": "https://turbo.build/schema.json",
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "dist/**",
+        ".next/**",
+        "!.next/cache/**"
+      ]
     },
     "typecheck": {
-      "dependsOn": ["^build"]
+      "dependsOn": [
+        "^build"
+      ]
     },
     "test": {
-      "dependsOn": ["^build"],
-      "env": ["DATABASE_URL", "TEST_DATABASE_URL", "OPENAI_API_KEY", "ANTHROPIC_API_KEY"]
+      "dependsOn": [
+        "^build"
+      ],
+      "env": [
+        "DATABASE_URL",
+        "TEST_DATABASE_URL",
+        "OPENAI_API_KEY",
+        "ANTHROPIC_API_KEY"
+      ]
     },
     "lint": {},
     "dev": {
@@ -42,6 +57,8 @@
     "GITHUB_ACTIONS",
     "PLAYWRIGHT_CHROMIUM_PATH",
     "PLAYWRIGHT_BROWSERS_PATH",
-    "FAKE_OPENAI_URL"
+    "FAKE_OPENAI_URL",
+    "BASE_URL",
+    "DOCS_URL"
   ]
 }
