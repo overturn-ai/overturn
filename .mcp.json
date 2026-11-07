@@ -135,6 +135,17 @@
         "-y",
         "@railway/mcp-server"
       ]
+    },
+    "orgo": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "github:nickvasilescu/orgo-mcp"
+      ],
+      "env": {
+        "ORGO_API_KEY": "${ORGO_API_KEY}",
+        "ORGO_TOOLSETS": "core,screen,files,shell"
+      }
     }
   }
 }

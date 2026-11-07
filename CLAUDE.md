@@ -11,6 +11,7 @@ Overturn (overturn.run, Apache-2.0) is the system of record for how a company co
 - Analytics: PostHog via `apps/web/components/analytics/PostHogProvider.tsx` (`track.*`). Errors: Sentry via `apps/web/instrumentation*.ts`. Both no-op without env keys.
 
 ## How work flows (the pipeline — do not skip steps)
+0. Ideas come from the `idea-sourcing` skill (complaints, ideabrowser.com, competitor changelogs, voice notes). Agents that need their own computer run on Orgo (`orgo` MCP) — only when a job needs a desktop, not by default.
 1. Idea → `/grill-me` until every branch is decided. Nothing gets built from an ungrilled idea. For changes to an existing area use `/grill-with-docs` so `docs/wiki/glossary.md` and `docs/decisions.md` get the vocabulary.
 2. `spec-writing` skill → Linear issue (Linear MCP). Label `agent-ready` if an agent can take it overnight.
 3. UI? `four-versions` skill first (Paper MCP; HTML fallback). Shireen picks pieces; merge; then code.
