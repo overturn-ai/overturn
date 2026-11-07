@@ -74,7 +74,7 @@ export default function CapturePage() {
           <CardContent className="text-sm text-muted-foreground">
             {s ? (
               <Link className="underline" href="/cases">
-                each one is a case and a training row
+                tone fixes aside, each one is a case and a training row
               </Link>
             ) : (
               ""

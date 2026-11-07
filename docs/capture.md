@@ -11,12 +11,12 @@ The Overturn app sits in the ticket sidebar.
 
 1. Create a project API key in Overturn (Settings → API keys).
 2. Download `overturn-zendesk-app.zip` from the [latest release](https://github.com/overturn-ai/overturn/releases) and upload it in Admin Center → Apps and integrations → Zendesk Support apps → **Upload private app**.
-3. Settings: `overturn_api_key` (kept server-side by Zendesk), `agent` (the workflow; one regression suite per workflow, default `claims-reply`), and optionally `decision_fields`: the custom fields that *are* the decision, as `id:label` pairs, e.g. `custom_field_123:status, custom_field_456:reserve`.
+3. Settings: `overturn_api_key` (kept server-side by Zendesk), `agent` (the workflow; one regression suite per workflow, default `claims-reply`), and optionally `decision_fields`: the custom fields that *are* the decision, as `id:label` pairs, e.g. `custom_field_123:coverage, custom_field_456:reserve, custom_field_789:denial_reason`.
 
 What the agent sees:
 
 - **Draft inserted · 112 words** once an AI assist, macro or paste lands in the reply box. A drafting agent that recorded its run with the SDK (`externalId: "zd:<ticket id>"`) is found automatically. "Use the current text as the draft" marks it by hand.
-- A **reason** box with quick picks: wrong coverage decision, wrong amount or date, missing required step, tone / wording, policy exception.
+- A **reason** picker with the claims pack's eight codes (listed below) and an optional note.
 - On **Submit**, sent as drafted is an approve (no prompt); changed is an edit, with the reason as the case title and the judge's rubric. `require_reason` blocks a changed reply until there is one.
 
 Overturn failing never blocks the send. The run page links back to the ticket.
@@ -39,8 +39,8 @@ Authorization: Bearer ov_live_…
     { "role": "customer", "author": "dana@example.com", "content": "Water came through the ceiling after the storm…" },
     { "role": "note", "content": "HO-3, deductible $1,000, no prior claims." }
   ],
-  "draft": { "text": "…adjuster will contact you within 5 business days…", "fields": { "status": "covered", "reserve": 4000 } },
-  "sent":  { "text": "…adjuster will contact you within 2 business days…", "fields": { "status": "covered", "reserve": 6500 } },
+  "draft": { "text": "…adjuster will contact you within 5 business days…", "fields": { "coverage": "covered", "reserve": 4000, "denial_reason": null } },
+  "sent":  { "text": "…adjuster will contact you within 2 business days…", "fields": { "coverage": "covered", "reserve": 6500, "denial_reason": null } },
   "reason": "Storm claims get 2-day contact; roof replacement, not repair"
 }
 ```
@@ -66,6 +66,10 @@ ov.capture(external_id="cnv_1", agent="claims-reply", source="front", context=co
 overturn capture --source zendesk --external-id zd:48213 --agent claims-reply \
   --draft @draft.txt --sent @sent.txt --reason "2-day SLA for storm claims" --context thread.json
 ```
+
+## See it before you have data
+
+[`examples/claims-pack`](https://github.com/overturn-ai/overturn/tree/main/examples/claims-pack) seeds a new project with 30 synthetic captures, so the scorecard and the suite have something to show on day one. It also lists the pack: workflow names, decision fields and reason codes.
 
 ## The scorecard
 

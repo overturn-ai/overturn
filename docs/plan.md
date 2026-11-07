@@ -129,5 +129,6 @@ The repositioning: Overturn is the system of record for how a company corrects A
 - [x] Web: Zendesk as the first onboarding tab (no code); captured runs link back to the ticket
 - [ ] Front plugin, Salesforce Service Cloud (Lightning) component, Gmail add-on: same `/v1/capture`, same sidebar logic
 - [x] Capture scorecard (`GET /v1/capture/stats`, web **Capture**): sent untouched vs edited, by expert, top reasons, by source, by week
-- [ ] Claims pack: default agent names, decision fields (coverage, reserve, denial reason), quick-pick reasons, a demo tenant with 30 captured corrections
+- [x] Claims pack: default agent names, decision fields (coverage, reserve, denial reason), quick-pick reasons, a demo tenant with 30 captured corrections (`examples/claims-pack`)
+- [ ] Hosted demo project on app.overturn.run, seeded from `examples/claims-pack`
 - [ ] Three claims teams on the Zendesk app; the pitch is their numbers

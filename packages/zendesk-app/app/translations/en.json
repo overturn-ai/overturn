@@ -27,7 +27,7 @@
       },
       "decision_fields": {
         "label": "Decision fields",
-        "helpText": "Custom fields that are the decision, as id:label pairs, e.g. custom_field_123:status, custom_field_456:reserve. Changes to these are scored exactly."
+        "helpText": "Custom fields that are the decision, as id:label pairs, e.g. custom_field_123:coverage, custom_field_456:reserve, custom_field_789:denial_reason. Changes to these are scored exactly."
       },
       "scope_tag": {
         "label": "Scope tag",

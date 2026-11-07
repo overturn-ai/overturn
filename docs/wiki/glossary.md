@@ -6,3 +6,4 @@
 - **Replay** — re-running recorded steps against another model and comparing final outputs via fingerprints.
 - **Capture scorecard** — the forwardable summary of corrections per agent; the handoff from engineer to ops leader.
 - **Owned model** — a model trained from a customer's own corrections; the moat.
+- **Claims pack** — the claims defaults: workflows `claims-reply` and `coverage-decision`, decision fields `coverage`, `reserve`, `denial_reason`, eight reason codes. `examples/claims-pack` seeds a demo project with them.

@@ -1,5 +1,10 @@
 import type { CaptureAnswer, CaptureCreate, CaptureMessage } from "@overturn-ai/shared";
-import { CLAIMS_REASON_CODES, diffCaptureAnswers, normalizeCaptureText } from "@overturn-ai/shared/capture";
+import {
+  CLAIMS_AGENTS,
+  CLAIMS_REASON_CODES,
+  diffCaptureAnswers,
+  normalizeCaptureText,
+} from "@overturn-ai/shared/capture";
 
 /** What the app knows about the ticket, read through ZAF. */
 export interface TicketSnapshot {
@@ -29,7 +34,7 @@ export interface AppSettings {
   requireReason: boolean;
   /** Also capture internal notes, not only public replies. */
   captureInternalNotes: boolean;
-  /** `custom_field_123:status, custom_field_9:reserve` → decision fields by label. */
+  /** `custom_field_123:coverage, custom_field_9:reserve` → decision fields by label. */
   decisionFields: Array<{ id: string; label: string }>;
   /** Replies shorter than this never count as a draft (a typed greeting is not a draft). */
   minDraftChars: number;
@@ -39,7 +44,7 @@ export interface AppSettings {
 
 export const DEFAULT_SETTINGS: AppSettings = {
   baseUrl: "https://api.overturn.run",
-  agent: "claims-reply",
+  agent: CLAIMS_AGENTS.reply,
   requireReason: true,
   captureInternalNotes: false,
   decisionFields: [],

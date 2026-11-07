@@ -79,6 +79,12 @@ export function captureSystemPrompt(agent: string, source: string): string {
   return `You are drafting the next reply for the "${agent}" workflow in ${source}. Answer the thread below as the expert on this team would: accurate, complete, and in the team's voice. When decision fields are listed, return the reply text and the decided values.`;
 }
 
+/** The claims pack: one regression suite per workflow. */
+export const CLAIMS_AGENTS = { reply: "claims-reply", decision: "coverage-decision" } as const;
+
+/** The claims pack: the fields that are the decision. Scored exactly; the letter around them is not. */
+export const CLAIMS_DECISION_FIELDS = ["coverage", "reserve", "denial_reason"] as const;
+
 /** The claims pack: why an adjuster changed a draft, as codes the scorecard counts. */
 export const CLAIMS_REASON_CODES = [
   { code: "wrong_coverage_decision", label: "Wrong coverage decision" },

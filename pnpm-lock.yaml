@@ -230,6 +230,31 @@ importers:
         specifier: ^3.2.7
         version: 3.2.7(@types/debug@4.1.13)(@types/node@22.20.5)(jiti@2.7.0)(jsdom@26.1.0)(lightningcss@1.32.0)(tsx@4.23.15)
 
+  examples/claims-pack:
+    dependencies:
+      '@overturn-ai/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
+      '@overturn-ai/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+    devDependencies:
+      '@overturn-ai/api':
+        specifier: workspace:*
+        version: link:../../apps/api
+      '@types/node':
+        specifier: ^22.20.5
+        version: 22.20.5
+      tsx:
+        specifier: ^4.23.0
+        version: 4.23.15
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.7
+        version: 3.2.7(@types/debug@4.1.13)(@types/node@22.20.5)(jiti@2.7.0)(jsdom@26.1.0)(lightningcss@1.32.0)(tsx@4.23.15)
+
   examples/next-review:
     dependencies:
       '@overturn-ai/sdk':
