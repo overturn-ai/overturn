@@ -14,7 +14,8 @@ export const personas = {
     readsCopy: true,
   },
   phone: {
-    use: { ...devices["iPhone 14"] },
+    // iPhone viewport/UA but on Chromium: CI only installs chromium, and the layout checks are what matter.
+    use: { ...devices["iPhone 14"], defaultBrowserType: "chromium" },
     patienceMs: 6000,
     readsCopy: false,
   },

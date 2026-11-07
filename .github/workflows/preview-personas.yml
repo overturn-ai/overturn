@@ -1,6 +1,7 @@
 name: Persona tests on preview
 
-# Runs the three first-time-user personas (impatient / confused / phone) against the PR's preview deployment.
+# Runs the three first-time-user personas (impatient / confused / phone) against a preview deployment.
+# App previews (Vercel / Railway) get the full suite with BASE_URL; the docs/marketing deploy (GitHub Pages) only runs the marketing/docs tests.
 on:
   deployment_status:
 
@@ -10,11 +11,9 @@ permissions:
 
 jobs:
   personas:
-    if: github.event.deployment_status.state == 'success' && github.event.deployment.environment != 'Production'
+    if: github.event.deployment_status.state == 'success' && github.event.deployment.environment != 'Production' && github.event.deployment.environment != 'production'
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    env:
-      BASE_URL: ${{ github.event.deployment_status.environment_url || github.event.deployment_status.target_url }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -22,9 +21,23 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile --ignore-scripts
       - run: npx playwright install --with-deps chromium
-      - run: pnpm test:personas
+      - name: Decide what this deployment is
+        id: target
+        env:
+          ENV_NAME: ${{ github.event.deployment.environment }}
+          URL: ${{ github.event.deployment_status.environment_url || github.event.deployment_status.target_url }}
+        run: |
+          if [[ "$ENV_NAME" == *pages* || "$URL" == *docs.* ]]; then
+            echo "docs_url=$URL" >> "$GITHUB_OUTPUT"; echo "grep=marketing|docs" >> "$GITHUB_OUTPUT"
+          else
+            echo "base_url=$URL" >> "$GITHUB_OUTPUT"; echo "grep=." >> "$GITHUB_OUTPUT"
+          fi
+      - run: pnpm test:personas -- --grep "${{ steps.target.outputs.grep }}"
+        env:
+          BASE_URL: ${{ steps.target.outputs.base_url || 'http://localhost:3000' }}
+          DOCS_URL: ${{ steps.target.outputs.docs_url }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
