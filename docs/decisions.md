@@ -186,5 +186,5 @@ One line of reasoning each. Newest at the bottom.
 
 ## 2026-11-07 (claims pack demo)
 
-- **The demo tenant is a seed script over the public API, not a database dump or a special tenant type.** `examples/claims-pack` posts 30 synthetic captures through `POST /v1/capture`, so the demo exercises the path a customer's data takes and works on any instance with one key. Every row is tagged `demo` and `metadata.synthetic`; the script refuses a project with captures of its own, because they would land in that team's scorecard and suite.
+- **The demo tenant is a seed script over the public API, not a database dump or a special tenant type.** `examples/claims-pack` posts 30 synthetic captures through `POST /v1/capture`, so the demo exercises the path a customer's data takes and works on any instance with one key. Every row is tagged `demo` and `metadata.synthetic`; the script refuses a project with recent captures that are not its own, because they would land in that team's scorecard and suite.
 - **Capture has no way to set its timestamp, and the demo did not add one.** A record people audit should not let a client backdate an entry, so the demo's By week chart shows one bar until the founder decides otherwise.

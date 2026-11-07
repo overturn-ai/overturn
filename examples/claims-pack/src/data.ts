@@ -1,5 +1,5 @@
 /**
- * The demo tenant: 30 synthetic captures at a fictional carrier, Northfield Mutual. Every name,
+ * The demo tenant: 30 synthetic captures at a fictional carrier. Every name,
  * policy and amount is made up; each row is tagged `demo` and `metadata.synthetic`.
  *
  * 18 drafts went out untouched and 12 were fixed, using every reason code at least once. Those are
@@ -345,7 +345,7 @@ const decisions: DecisionRow[] = [
       "Because your home was not damaged, your policy's loss of use coverage does not apply, so we cannot reimburse the hotel.",
     fix: {
       sent: "Your home was not damaged, but the county ordered the evacuation, and our claims manager has approved covering your hotel. Please send the $1,400 receipt and we will reimburse it this week.",
-      decision: { coverage: "partial", reserve: 1400, denial_reason: null },
+      decision: { coverage: "covered", reserve: 1400, denial_reason: null },
       reasonCode: "policy_exception",
       reason: "County evacuation order; one-time exception approved by the claims manager",
     },

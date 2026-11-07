@@ -12,7 +12,7 @@ Create a new project, mint a key for it (Settings → API keys), then:
 OVERTURN_API_KEY=ov_live_... pnpm --filter @overturn-ai/example-claims-pack seed
 ```
 
-Set `OVERTURN_BASE_URL` for a self-hosted API. Open **Capture** in the app. Rerunning changes nothing, and the script refuses a project that already has captures of its own.
+Set `OVERTURN_BASE_URL` for a self-hosted API. Open **Capture** in the app. Rerunning fills in anything missing and changes nothing else. The script refuses a project with captures from the last year that are not from this demo.
 
 ## The pack
 

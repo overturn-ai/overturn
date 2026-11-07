@@ -98,7 +98,12 @@ describe("seeding a fresh project", () => {
       draft: { text: "A real draft." },
       sent: { text: "A real draft." },
     });
-    await expect(seed(fresh)).rejects.toThrow(/already has captures/);
+    await expect(seed(fresh)).rejects.toThrow(/not from this demo/);
     expect((await fresh.api.corrections.captureStats({ days: 30 })).captures).toBe(1);
+
+    // A stray demo row must not switch the guard off for the rest.
+    await fresh.capture(captures[0]!);
+    await expect(seed(fresh)).rejects.toThrow(/not from this demo/);
+    expect((await fresh.api.corrections.captureStats({ days: 30 })).captures).toBe(2);
   });
 });

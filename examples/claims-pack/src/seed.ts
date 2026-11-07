@@ -3,8 +3,9 @@
  *
  *   OVERTURN_API_KEY=ov_live_... pnpm --filter @overturn-ai/example-claims-pack seed
  *
- * Safe to rerun. Refuses a project that already holds captures of its own, because these
- * rows would land in that team's scorecard and suite.
+ * Safe to rerun, including after an interrupted run. Refuses a project with captures from the
+ * last year that are not from this demo, because these rows would land in that team's scorecard
+ * and suite.
  */
 import { pathToFileURL } from "node:url";
 import { Overturn } from "@overturn-ai/sdk";
@@ -24,9 +25,10 @@ export async function seed(ov: Overturn): Promise<SeedResult> {
   const skipped = captures.length - missing.length;
 
   const { captures: existing } = await ov.api.corrections.captureStats({ days: 365 });
-  if (skipped === 0 && existing > 0) {
+  // Each demo thread holds one capture, so anything beyond those belongs to the team.
+  if (existing > skipped) {
     throw new Error(
-      `This project already has captures (${existing}), and none are from this demo. Seed a fresh project instead.`,
+      `This project already has captures that are not from this demo (${existing - skipped}). Seed a fresh project instead.`,
     );
   }
 

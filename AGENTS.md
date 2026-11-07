@@ -24,7 +24,7 @@ Overturn (overturn.run, Apache-2.0) is the system of record for how a company co
 Cheap model (haiku) for triage, classification, log reading. Opus for anything that ships: code, specs, design, customer-facing words. Sonnet for judging, review, research. One agent per platform: the Zendesk-app agent never touches the trainer; the research agent never edits code.
 
 ## Git and attribution (non-negotiable)
-Author and committer: `Shireen Kadhium <shireenkadhium1@gmail.com>`. No `Co-Authored-By`, no `Claude-Session`, no "Generated with Claude" — in commits, PRs, tags, releases. Branches `agent/<linear-id>-<slug>` or `fix/sentry-<id>`. Never force-push, never merge your own PR, never touch `.env*`. This repo is public: no customer names, no keys, no internal pricing in commits.
+Run `git fetch origin` and branch from `origin/main`; local `main` can be behind. Author and committer: `Shireen Kadhium <shireenkadhium1@gmail.com>`. No `Co-Authored-By`, no `Claude-Session`, no "Generated with Claude" — in commits, PRs, tags, releases. Branches `agent/<linear-id>-<slug>` or `fix/sentry-<id>`. Never force-push, never merge your own PR, never touch `.env*`. This repo is public: no customer names, no keys, no internal pricing in commits.
 
 ## Flows to test (personas)
 overturn.run hero → quickstart → sign in · `/login` magic link · `/runs` → run detail → correct a step → `/replays` launch → report · `/capture` scorecard · `/cases` · `/models` · Zendesk app sidebar (draft vs sent + reason). The buyer reads the Capture scorecard on a phone when it is forwarded to them.
