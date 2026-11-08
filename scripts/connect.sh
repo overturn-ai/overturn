@@ -129,6 +129,7 @@ print_table() {
     case "$(status_of "$s")" in
       connected) ok "$s (via the $([ "$s" = github ] && echo gh || echo "$s") CLI login)" ;;
       unknown)   dim "$s — not configured here" ;;
+      pending)   bad "$s — project servers not approved on this machine yet" ;;
       *)         if cli_signed_in "$s"; then bad "$s — CLI is signed in but the server did not connect ($(status_of "$s"))"; else bad "$s — run: $(cli_hint "$s")"; fi ;;
     esac
   done
@@ -136,7 +137,11 @@ print_table() {
     [ -n "$var" ] || continue
     IFS='|' read -r req _ <<<"$(key_info "$var")"
     if settings_has "$var"; then
-      case "$(status_of "$s")" in connected) ok "$s" ;; *) bad "$s — $var is set but the server is not connecting ($(status_of "$s"))" ;; esac
+      case "$(status_of "$s")" in
+        connected) ok "$s" ;;
+        pending)   bad "$s — project servers not approved on this machine yet" ;;
+        *)         bad "$s — $var is set but the server is not connecting ($(status_of "$s"))" ;;
+      esac
     elif [ "$req" = "1" ]; then bad "$s — $var missing"
     else dim "$s — $var not set (optional)"; fi
   done <<<"$KEY_ROWS"
