@@ -112,13 +112,6 @@
         "ORGO_API_KEY": "${ORGO_API_KEY:-}",
         "ORGO_TOOLSETS": "core,screen,files,shell"
       }
-    },
-    "railway": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@railway/mcp-server"
-      ]
     }
   }
 }
