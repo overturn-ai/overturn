@@ -8,25 +8,22 @@
       }
     },
     "exa": {
-      "command": "npx",
-      "args": ["-y", "exa-mcp-server"],
-      "env": {
-        "EXA_API_KEY": "${EXA_API_KEY}"
-      }
+      "type": "http",
+      "url": "https://mcp.exa.ai/mcp"
     },
     "firecrawl": {
       "command": "npx",
-      "args": ["-y", "firecrawl-mcp"],
+      "args": [
+        "-y",
+        "firecrawl-mcp"
+      ],
       "env": {
-        "FIRECRAWL_API_KEY": "${FIRECRAWL_API_KEY}"
+        "FIRECRAWL_API_KEY": "${FIRECRAWL_API_KEY:-}"
       }
     },
     "apify": {
-      "command": "npx",
-      "args": ["-y", "@apify/actors-mcp-server"],
-      "env": {
-        "APIFY_TOKEN": "${APIFY_TOKEN}"
-      }
+      "type": "http",
+      "url": "https://mcp.apify.com"
     },
     "linear": {
       "type": "http",
@@ -34,7 +31,8 @@
     },
     "github": {
       "type": "http",
-      "url": "https://api.githubcopilot.com/mcp/"
+      "url": "https://api.githubcopilot.com/mcp/",
+      "headersHelper": "GH=$(command -v gh 2>/dev/null); [ -n \"$GH\" ] || for p in /opt/homebrew/bin/gh /usr/local/bin/gh \"$HOME/.local/bin/gh\"; do [ -x \"$p\" ] && GH=$p && break; done; T=$(\"$GH\" auth token 2>/dev/null); printf '{\"Authorization\":\"Bearer %s\"}' \"$T\""
     },
     "sentry": {
       "type": "http",
@@ -42,33 +40,43 @@
     },
     "posthog": {
       "type": "http",
-      "url": "https://mcp.posthog.com/mcp",
-      "headers": {
-        "Authorization": "Bearer ${POSTHOG_PERSONAL_API_KEY}"
-      }
+      "url": "https://mcp.posthog.com/mcp"
     },
     "stripe": {
-      "command": "npx",
-      "args": ["-y", "@stripe/mcp", "--tools=all"],
-      "env": {
-        "STRIPE_SECRET_KEY": "${STRIPE_SECRET_KEY}"
-      }
+      "type": "http",
+      "url": "https://mcp.stripe.com"
     },
     "postgres": {
       "command": "npx",
-      "args": ["-y", "@bytebase/dbhub", "--transport", "stdio", "--dsn", "${DATABASE_URL}"]
+      "args": [
+        "-y",
+        "@bytebase/dbhub",
+        "--transport",
+        "stdio",
+        "--dsn",
+        "${DATABASE_URL:-postgres://postgres:postgres@localhost:5432/overturn}"
+      ]
     },
     "playwright": {
       "command": "npx",
-      "args": ["-y", "@playwright/mcp@latest", "--headless"]
+      "args": [
+        "-y",
+        "@playwright/mcp@latest",
+        "--headless"
+      ]
     },
     "chrome-devtools": {
       "command": "npx",
-      "args": ["-y", "chrome-devtools-mcp@latest"]
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@latest"
+      ]
     },
     "lightpanda": {
       "command": "${HOME}/.local/bin/lightpanda",
-      "args": ["mcp"]
+      "args": [
+        "mcp"
+      ]
     },
     "paper": {
       "type": "http",
@@ -76,33 +84,41 @@
     },
     "headroom": {
       "command": "headroom",
-      "args": ["mcp"]
+      "args": [
+        "mcp"
+      ]
     },
     "agentmail": {
-      "command": "npx",
-      "args": ["-y", "agentmail-mcp"],
-      "env": {
-        "AGENTMAIL_API_KEY": "${AGENTMAIL_API_KEY}"
-      }
+      "type": "http",
+      "url": "https://mcp.agentmail.to/mcp"
     },
     "agentphone": {
       "command": "npx",
-      "args": ["-y", "agentphone-mcp"],
+      "args": [
+        "-y",
+        "agentphone-mcp"
+      ],
       "env": {
-        "AGENTPHONE_API_KEY": "${AGENTPHONE_API_KEY}"
+        "AGENTPHONE_API_KEY": "${AGENTPHONE_API_KEY:-}"
+      }
+    },
+    "orgo": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "github:nickvasilescu/orgo-mcp"
+      ],
+      "env": {
+        "ORGO_API_KEY": "${ORGO_API_KEY:-}",
+        "ORGO_TOOLSETS": "core,screen,files,shell"
       }
     },
     "railway": {
       "command": "npx",
-      "args": ["-y", "@railway/mcp-server"]
-    },
-    "orgo": {
-      "command": "npx",
-      "args": ["-y", "github:nickvasilescu/orgo-mcp"],
-      "env": {
-        "ORGO_API_KEY": "${ORGO_API_KEY}",
-        "ORGO_TOOLSETS": "core,screen,files,shell"
-      }
+      "args": [
+        "-y",
+        "@railway/mcp-server"
+      ]
     }
   }
 }

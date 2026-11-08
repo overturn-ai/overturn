@@ -19,7 +19,8 @@
     "db:generate": "pnpm --filter @overturn-ai/api db:generate",
     "bootstrap": "pnpm --filter @overturn-ai/api bootstrap",
     "quickstart:check": "bash scripts/quickstart-check.sh",
-    "test:personas": "playwright test -c tests/personas/playwright.config.ts"
+    "test:personas": "playwright test -c tests/personas/playwright.config.ts",
+    "connect": "bash scripts/connect.sh"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",
