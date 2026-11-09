@@ -19,7 +19,12 @@ if (typeof window !== "undefined" && KEY && !posthog.__loaded) {
     api_host: HOST,
     capture_pageview: false, // manual, so App Router navigations count
     capture_pageleave: true,
-    session_recording: { maskAllInputs: true, maskTextSelector: "[data-ph-mask]" },
+    // Every page in the app can show a customer's ticket text, prompts or model output. Recordings
+    // keep layout and clicks for funnel review and mask all text and inputs; nothing a customer
+    // sent us reaches PostHog (docs/privacy).
+    session_recording: { maskAllInputs: true, maskTextSelector: "*" },
+    // Autocapture would send clicked elements' text; the funnel uses explicit track.* events.
+    autocapture: false,
     persistence: "localStorage+cookie",
   });
 }
