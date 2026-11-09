@@ -21,8 +21,9 @@ function snippet(lang: Lang, key: string, apiUrl: string): string {
 # 2. App settings:
 #      overturn_api_key   = ${k}
 #      overturn_base_url  = ${apiUrl}
-#      agent              = claims-reply          # one suite per workflow
-#      decision_fields    = custom_field_123:status, custom_field_456:reserve
+#      agent              = support-reply         # one suite per workflow
+#      reason_pack        = support               # or claims
+#      decision_fields    = custom_field_123:status, custom_field_456:priority
 # 3. Send one reply. It shows up here as a run; a changed reply is already a case.
 #
 # Any other tool (Front, Salesforce, your own UI): POST ${apiUrl}/v1/capture

@@ -21,7 +21,7 @@ const ORIGIN_LABEL: Record<Origin, string> = {
 };
 
 /**
- * The capture scorecard: the number a claims leader reads. How much of the AI's work went
+ * The capture scorecard: the number a support lead reads. How much of the AI's work went
  * out untouched, who is fixing the rest, and why.
  */
 export default function CapturePage() {
@@ -44,7 +44,7 @@ export default function CapturePage() {
         ``,
         `Sent untouched: ${pct(s.untouchedRate)} (${s.untouched} of ${s.captures})`,
         `Fixes kept: ${s.edited}`,
-        `Experts capturing: ${s.experts}`,
+        `Reviewers capturing: ${s.experts}`,
         ``,
         ...(s.byReason.length
           ? ["Why drafts were changed:", ...s.byReason.map((r) => `  ${r.label}: ${r.count}`)]
@@ -73,8 +73,8 @@ export default function CapturePage() {
         <div>
           <h1 className="text-lg font-semibold">Capture</h1>
           <p className="text-sm text-muted-foreground">
-            Every reply your experts sent from the tool they work in, scored: untouched means the draft went
-            out as written.
+            Every reply your team sent from the help desk, scored: untouched means the AI draft went out as
+            written.
           </p>
         </div>
         <div className="flex items-end gap-2">
@@ -94,7 +94,7 @@ export default function CapturePage() {
             </>
           ) : null}
           <Input
-            placeholder="agent"
+            placeholder="workflow"
             className="w-40"
             value={agent}
             onChange={(e) => setAgent(e.target.value)}
@@ -137,7 +137,7 @@ export default function CapturePage() {
             {origin === "ai"
               ? "only drafts an assist inserted or an agent run recorded: the clean AI number"
               : origin === "manual"
-                ? "drafts the expert marked by hand; may be AI pasted from another tool"
+                ? "drafts the reviewer marked by hand; may be AI pasted from another tool"
                 : origin === "unknown"
                   ? "captures that did not say where the draft came from"
                   : "AI-drafted vs marked by hand; pick one for a clean number"}
@@ -162,7 +162,7 @@ export default function CapturePage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardDescription>Expert fixes kept</CardDescription>
+            <CardDescription>Fixes kept</CardDescription>
             <CardTitle className="font-mono text-3xl font-normal tabular-nums">
               {s ? s.edited : "—"}
             </CardTitle>
@@ -179,7 +179,7 @@ export default function CapturePage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardDescription>Experts capturing</CardDescription>
+            <CardDescription>Reviewers capturing</CardDescription>
             <CardTitle className="font-mono text-3xl font-normal tabular-nums">
               {s ? s.experts : "—"}
             </CardTitle>
@@ -194,7 +194,7 @@ export default function CapturePage() {
         <Card>
           <CardContent className="py-8 text-sm text-muted-foreground">
             Nothing captured in this window. Install the Zendesk app or call <code>POST /v1/capture</code>{" "}
-            from the tool your experts work in; the first reply they send shows up here.
+            from your help desk; the first reply your team sends shows up here.
           </CardContent>
         </Card>
       ) : null}
@@ -232,13 +232,13 @@ export default function CapturePage() {
         {s && s.byExpert.length > 0 ? (
           <Card>
             <CardHeader>
-              <CardDescription>Fixes kept, by expert</CardDescription>
+              <CardDescription>Fixes kept, by reviewer</CardDescription>
             </CardHeader>
             <CardContent className="p-0">
               <Table>
                 <THead>
                   <TR>
-                    <TH>Expert</TH>
+                    <TH>Reviewer</TH>
                     <TH className="text-right">Fixes kept</TH>
                   </TR>
                 </THead>
@@ -252,7 +252,8 @@ export default function CapturePage() {
                 </TBody>
               </Table>
               <p className="px-4 py-2 text-xs text-muted-foreground">
-                Credit for expertise captured. There is no per-person rate anywhere in Overturn.
+                Credit for the fixes each reviewer taught the AI. There is no per-person rate anywhere in
+                Overturn.
               </p>
             </CardContent>
           </Card>
@@ -292,7 +293,7 @@ export default function CapturePage() {
         )}
         <Card>
           <CardHeader>
-            <CardDescription>Why experts changed the draft</CardDescription>
+            <CardDescription>Why reviewers changed the draft</CardDescription>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
@@ -336,7 +337,7 @@ export default function CapturePage() {
             <Table>
               <THead>
                 <TR>
-                  <TH>Agent</TH>
+                  <TH>Workflow</TH>
                   <TH className="text-right">Captured</TH>
                   <TH className="text-right">Edited</TH>
                 </TR>

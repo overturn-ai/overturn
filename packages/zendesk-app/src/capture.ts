@@ -1,6 +1,5 @@
 import type { CaptureAnswer, CaptureCreate, CaptureMessage } from "@overturn-ai/shared";
 import {
-  CLAIMS_AGENTS,
   diffCaptureAnswers,
   normalizeCaptureText,
   REASON_PACKS,
@@ -49,13 +48,13 @@ export interface AppSettings {
 
 export const DEFAULT_SETTINGS: AppSettings = {
   baseUrl: "https://api.overturn.run",
-  agent: CLAIMS_AGENTS.reply,
+  agent: "support-reply",
   requireReason: true,
   captureInternalNotes: false,
   decisionFields: [],
   minDraftChars: 80,
   scopeTag: null,
-  reasonPack: "claims",
+  reasonPack: "support",
 };
 
 /** Parses the app's metadata settings (strings and booleans from the manifest). */
@@ -210,7 +209,7 @@ export function decideOnSend(input: {
   reason: string;
   actor: string | null;
   settings: AppSettings;
-  /** When Submit was pressed; with the draft's `at`, gives how long it sat in front of the expert. */
+  /** When Submit was pressed; with the draft's `at`, gives how long it sat in front of the reviewer. */
   now?: number;
 }): SendDecision {
   const { ticket, draft, send, settings } = input;

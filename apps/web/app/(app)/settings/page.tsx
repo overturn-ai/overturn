@@ -292,9 +292,9 @@ export default function SettingsPage() {
                   data-testid="capture-show-by-expert"
                 />
                 <span>
-                  Show fixes kept by expert on the Capture page
+                  Show fixes kept by reviewer on the Capture page
                   <span className="block text-xs text-muted-foreground">
-                    Off by default. When on, the Capture page lists how many corrections each expert
+                    Off by default. When on, the Capture page lists how many corrections each reviewer
                     contributed, as credit. It never shows a per-person untouched rate or time to send; those
                     exist only as team numbers.
                   </span>
@@ -489,7 +489,7 @@ export default function SettingsPage() {
               className="w-72 max-w-full"
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
-              placeholder="claims-demo"
+              placeholder="billing-support"
               data-testid="new-project-name"
             />
             <Button
