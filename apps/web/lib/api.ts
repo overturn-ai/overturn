@@ -125,7 +125,7 @@ export const client = {
     create: (body: Omit<CorrectionCreate, "source">) =>
       api<CorrectionResult>("POST", "/v1/corrections", { ...body, source: "ui" }),
     list: (runId: string) => api<Correction[]>("GET", "/v1/corrections", undefined, { runId }),
-    captureStats: (q: { days?: number; agent?: string }) =>
+    captureStats: (q: { days?: number; agent?: string; origin?: "all" | "ai" | "manual" | "unknown" }) =>
       api<CaptureStats>("GET", "/v1/capture/stats", undefined, q),
   },
   cases: {

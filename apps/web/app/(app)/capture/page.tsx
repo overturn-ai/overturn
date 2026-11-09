@@ -11,6 +11,15 @@ import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { client } from "@/lib/api";
 import { pct } from "@/lib/utils";
 
+type Origin = "all" | "ai" | "manual" | "unknown";
+/** Where the draft came from, in the words the buyer reads. */
+const ORIGIN_LABEL: Record<Origin, string> = {
+  all: "All drafts",
+  ai: "AI drafts",
+  manual: "Marked by hand",
+  unknown: "Origin unknown",
+};
+
 /**
  * The capture scorecard: the number a claims leader reads. How much of the AI's work went
  * out untouched, who is fixing the rest, and why.
@@ -18,9 +27,10 @@ import { pct } from "@/lib/utils";
 export default function CapturePage() {
   const [days, setDays] = useState(30);
   const [agent, setAgent] = useState("");
+  const [origin, setOrigin] = useState<Origin>("all");
   const stats = useQuery({
-    queryKey: ["capture-stats", days, agent],
-    queryFn: () => client.corrections.captureStats({ days, agent: agent || undefined }),
+    queryKey: ["capture-stats", days, agent, origin],
+    queryFn: () => client.corrections.captureStats({ days, agent: agent || undefined, origin }),
   });
   const s = stats.data;
   const maxWeek = Math.max(1, ...(s?.weekly.map((w) => w.captures) ?? [1]));
@@ -30,7 +40,7 @@ export default function CapturePage() {
   // in an email on a phone. This is the handoff from the installer to the person who pays.
   const summary = s
     ? [
-        `AI drafts, last ${days} days${agent ? ` (${agent})` : ""}`,
+        `${ORIGIN_LABEL[origin]}, last ${days} days${agent ? ` (${agent})` : ""}`,
         ``,
         `Sent untouched: ${pct(s.untouchedRate)} (${s.untouched} of ${s.captures})`,
         `Fixes kept: ${s.edited}`,
@@ -47,7 +57,7 @@ export default function CapturePage() {
   const forward = (how: "mail" | "copy") => {
     track.scorecardForwarded();
     if (how === "mail") {
-      const subject = `AI draft scorecard, last ${days} days: ${pct(s?.untouchedRate ?? 0)} sent untouched`;
+      const subject = `${ORIGIN_LABEL[origin]} scorecard, last ${days} days: ${pct(s?.untouchedRate ?? 0)} sent untouched`;
       window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(summary)}`;
     } else {
       void navigator.clipboard?.writeText(summary).then(() => {
@@ -97,6 +107,43 @@ export default function CapturePage() {
           </NativeSelect>
         </div>
       </div>
+
+      {s && s.byOrigin.length > 0 ? (
+        <div className="flex flex-wrap items-center gap-1.5 text-sm" data-testid="origin-filter">
+          {(["all", "ai", "manual", "unknown"] as const).map((o) => {
+            const n =
+              o === "all"
+                ? s.byOrigin.reduce((acc, x) => acc + x.captures, 0)
+                : (s.byOrigin.find((x) => x.origin === o)?.captures ?? 0);
+            if (o !== "all" && n === 0 && origin !== o) return null;
+            return (
+              <button
+                key={o}
+                type="button"
+                onClick={() => setOrigin(o)}
+                data-testid={`origin-${o}`}
+                aria-pressed={origin === o}
+                className={`rounded-md border px-2 py-0.5 font-mono text-xs tabular-nums ${
+                  origin === o
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-border text-muted-foreground"
+                }`}
+              >
+                {ORIGIN_LABEL[o]} {n}
+              </button>
+            );
+          })}
+          <span className="ml-1 text-xs text-muted-foreground">
+            {origin === "ai"
+              ? "only drafts an assist inserted or an agent run recorded: the clean AI number"
+              : origin === "manual"
+                ? "drafts the expert marked by hand; may be AI pasted from another tool"
+                : origin === "unknown"
+                  ? "captures that did not say where the draft came from"
+                  : "AI-drafted vs marked by hand; pick one for a clean number"}
+          </span>
+        </div>
+      ) : null}
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>

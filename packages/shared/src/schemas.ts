@@ -660,15 +660,27 @@ export const captureResultSchema = z.object({
 });
 export type CaptureResult = z.infer<typeof captureResultSchema>;
 
+/**
+ * Where the draft came from, derived from the capture's `draft:*` tags: "ai" when an assist
+ * inserted it, an SDK run recorded it or the caller named the model; "manual" when the expert
+ * marked the composer text as the draft by hand; "unknown" when the caller said nothing.
+ */
+export const draftOriginSchema = z.enum(["ai", "manual", "unknown"]);
+export type DraftOrigin = z.infer<typeof draftOriginSchema>;
+
 export const captureStatsQuerySchema = z.object({
   days: z.coerce.number().int().min(1).max(365).default(30),
   agent: z.string().optional(),
+  /** Restrict the scorecard to one draft origin; "all" (default) keeps every capture. */
+  origin: z.enum(["all", ...draftOriginSchema.options]).default("all"),
 });
 export type CaptureStatsQuery = z.infer<typeof captureStatsQuerySchema>;
 
 /** The number that pays for the product: how much of the AI's work went out untouched, and who fixed the rest. */
 export const captureStatsSchema = z.object({
   days: z.number().int(),
+  /** The origin filter the numbers were computed under. */
+  origin: z.enum(["all", ...draftOriginSchema.options]),
   captures: z.number().int(),
   /** Sent as drafted. */
   untouched: z.number().int(),
@@ -690,6 +702,10 @@ export const captureStatsSchema = z.object({
     z.object({ reason: z.string(), label: z.string(), count: z.number().int(), excluded: z.boolean() }),
   ),
   bySource: z.array(z.object({ source: z.string(), count: z.number().int() })),
+  /** AI-drafted vs hand-marked vs unknown, always over the unfiltered window, so the filter chips can show counts. */
+  byOrigin: z.array(
+    z.object({ origin: draftOriginSchema, captures: z.number().int(), edited: z.number().int() }),
+  ),
   byAgent: z.array(z.object({ agent: z.string(), captures: z.number().int(), edited: z.number().int() })),
   weekly: z.array(
     z.object({ weekStart: isoDateSchema, captures: z.number().int(), edited: z.number().int() }),
