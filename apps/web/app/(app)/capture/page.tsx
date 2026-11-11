@@ -11,6 +11,24 @@ import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { client } from "@/lib/api";
 import { pct } from "@/lib/utils";
 
+async function copyText(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand("copy");
+    ta.remove();
+    return ok;
+  }
+}
+
 /**
  * The capture scorecard: the number a claims leader reads. How much of the AI's work went
  * out untouched, who is fixing the rest, and why.
@@ -50,7 +68,10 @@ export default function CapturePage() {
       const subject = `AI draft scorecard, last ${days} days: ${pct(s?.untouchedRate ?? 0)} sent untouched`;
       window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(summary)}`;
     } else {
-      void navigator.clipboard?.writeText(summary).then(() => {
+      // The async clipboard API is missing on plain-http origins and rejects when the browser has
+      // not granted clipboard-write (headless Chromium, some in-app browsers); fall back to execCommand.
+      void copyText(summary).then((ok) => {
+        if (!ok) return;
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       });
