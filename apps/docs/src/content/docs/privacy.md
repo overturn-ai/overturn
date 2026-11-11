@@ -5,7 +5,7 @@ description: What the hosted Overturn stores, where, for how long, who processes
 
 *Last updated 11 November 2026.*
 
-This covers the hosted service at app.overturn.run and api.overturn.run. None of it applies when you [self-host](/docs/self-hosting/): then the data stays on your Postgres.
+This covers the hosted service at app.overturn.run and api.overturn.run, operated by Fluorine Technologies, Inc. None of it applies when you [self-host](/docs/self-hosting/): then the data stays on your Postgres.
 
 **What we store.** Your email address, to sign you in and invite you to workspaces. API keys, hashed. The runs your SDK or exporter sends: prompts, model responses, tool calls and their results, run input and output, tags. Captures from your help desk (the Zendesk app or `POST /v1/capture`): the ticket thread the reviewer saw, the AI draft, the reply they sent, the reason they picked, the reviewer name you configure, the ticket link, the requester's email or name, and how long the draft sat before it was sent. Corrections, cases and replay results. Project settings, including any Slack webhook URL you add.
 
