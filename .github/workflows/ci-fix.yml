@@ -52,7 +52,7 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          claude_args: "--model claude-opus-5-5 --max-turns 80"
+          claude_args: '--model claude-opus-5-5 --max-turns 80 --allowedTools "Bash,Read,Edit,MultiEdit,Write,Glob,Grep,WebFetch,WebSearch,Task,TodoWrite" --disallowedTools "Bash(git push --force:*),Bash(git push -f:*)"'
           prompt: |
             Something failed on main: ${{ steps.fail.outputs.what }}. The failing log is in ./failure.log (read it first). Read CLAUDE.md.
             Decide in one minute whether this is (a) a code or config regression you can fix, (b) flaky infrastructure, or (c) a missing secret / external outage.
