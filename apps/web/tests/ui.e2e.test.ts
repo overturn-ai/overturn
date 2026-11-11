@@ -65,7 +65,9 @@ beforeAll(async () => {
   browser = await chromium.launch(
     process.env.PLAYWRIGHT_CHROMIUM_PATH ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH } : {},
   );
-  page = await browser.newPage({ baseURL: webUrl });
+  // Chromium rejects navigator.clipboard.writeText unless the page is granted clipboard permission
+  // (the scorecard's "Copy summary" button writes to it).
+  page = await browser.newPage({ baseURL: webUrl, permissions: ["clipboard-read", "clipboard-write"] });
 }, 180_000);
 
 afterAll(async () => {
