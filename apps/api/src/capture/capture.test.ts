@@ -369,3 +369,49 @@ describe("GET /v1/capture/stats", () => {
     expect(filtered.body.edited).toBe(2);
   });
 });
+
+describe("GET /v1/capture/stats?origin=", () => {
+  it("splits AI-drafted replies from drafts the expert marked by hand", async () => {
+    const base = {
+      source: "zendesk",
+      agent: "origin-split",
+      context: thread,
+      draft: { text: draft },
+      sent: { text: draft },
+    };
+    // The Zendesk app tags where the draft came from; an SDK caller naming the model is AI too.
+    await api(ctx, "POST", "/v1/capture", { ...base, externalId: "zd:o1", tags: ["draft:inserted"] });
+    await api(ctx, "POST", "/v1/capture", { ...base, externalId: "zd:o2", tags: ["draft:preloaded"] });
+    await api(ctx, "POST", "/v1/capture", { ...base, externalId: "zd:o3", draftModel: "gpt-4.1-mini" });
+    await api(ctx, "POST", "/v1/capture", {
+      ...base,
+      externalId: "zd:o4",
+      tags: ["draft:manual"],
+      sent: { text: `${draft} Edited.` },
+      reason: "hand-marked",
+    });
+    await api(ctx, "POST", "/v1/capture", { ...base, externalId: "zd:o5" });
+
+    type Stats = import("@overturn-ai/shared").CaptureStats;
+    const all = await api<Stats>(ctx, "GET", "/v1/capture/stats?days=30&agent=origin-split");
+    expect(all.status).toBe(200);
+    expect(all.body.captures).toBe(5);
+    expect(all.body.byOrigin).toEqual([
+      { origin: "ai", captures: 3, edited: 0 },
+      { origin: "manual", captures: 1, edited: 1 },
+      { origin: "unknown", captures: 1, edited: 0 },
+    ]);
+
+    const ai = await api<Stats>(ctx, "GET", "/v1/capture/stats?days=30&agent=origin-split&origin=ai");
+    expect(ai.body.captures).toBe(3);
+    expect(ai.body.untouchedRate).toBe(1);
+    expect(ai.body.origin).toBe("ai");
+
+    const manual = await api<Stats>(ctx, "GET", "/v1/capture/stats?days=30&agent=origin-split&origin=manual");
+    expect(manual.body.captures).toBe(1);
+    expect(manual.body.edited).toBe(1);
+
+    const bad = await api(ctx, "GET", "/v1/capture/stats?origin=robot");
+    expect(bad.status).toBe(400);
+  });
+});

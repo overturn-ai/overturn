@@ -1,22 +1,32 @@
 ---
 title: Privacy
-description: What the hosted Overturn stores, where, for how long, and how to delete it.
+description: What the hosted Overturn stores, where, for how long, who processes it, and how to delete it.
 ---
 
-*Last updated 22 October 2026.*
+*Last updated 11 November 2026.*
 
-**What we store.** Your email address (to sign you in and invite you to workspaces); API keys (hashed); the runs your SDK or exporter sends — prompts, model responses, tool calls and their results, run input and output, tags; corrections, with the actor name you supply; cases and replay results; project settings including any Slack webhook URL you configure. We store what you send: use the SDK's `redact` hook to drop or edit anything that should never leave your systems.
+This covers the hosted service at app.overturn.run and api.overturn.run. None of it applies when you [self-host](/docs/self-hosting/): then the data stays on your Postgres.
 
-**Where.** Railway (US). Email is sent through Resend. Replays call the model providers you choose (OpenAI, Anthropic, Google, OpenRouter) with the prompts in your cases; those providers' terms apply to those calls.
+**What we store.** Your email address, to sign you in and invite you to workspaces. API keys, hashed. The runs your SDK or exporter sends: prompts, model responses, tool calls and their results, run input and output, tags. Captures from your help desk (the Zendesk app or `POST /v1/capture`): the ticket thread the reviewer saw, the AI draft, the reply they sent, the reason they picked, the reviewer name you configure, the ticket link, the requester's email or name, and how long the draft sat before it was sent. Corrections, cases and replay results. Project settings, including any Slack webhook URL you add.
 
-**How long.** Runs that are not behind a case are deleted after the project's retention setting (default 90 days). Runs behind a case, and cases, corrections and replay results, are kept until you delete them. Sign-in links expire in 15 minutes; sessions in 30 days.
+We store what you send. Use the SDK's `redact` hook to drop or edit anything that should never leave your systems, and scope the Zendesk app to a tag if only some tickets should be captured.
 
-**Who can see it.** Members of your workspace. Maintainers can access the database to operate the service and will not look at your content except to debug a problem you report.
+**What we use it for.** Showing it back to your workspace, running the replays and training jobs you start, and operating the service. We do not sell it, we do not train models on it, and we do not use your content for anything else.
 
-**Deleting.** Archive or delete cases and revoke keys in the app. To delete a whole workspace and everything in it, open a GitHub issue or email us from a workspace member's address; we delete within 7 days and confirm.
+**Model calls.** Replays, the semantic scorer and training call the model providers you choose (OpenAI, Anthropic, Google, OpenRouter, Together) with the prompts in your cases; those providers' terms apply to those calls. Turn off **Settings → Privacy → hosted model calls** and the hosted service makes no model calls for that project; replays then run only against models you host.
 
-**Cookies.** One session cookie on app.overturn.run. No analytics, no third-party trackers.
+**Who processes it.** Railway (hosting and database, US). Resend (sign-in and invitation email). PostHog (product analytics, US): page views, the funnel events listed in our repo, and session recordings with all text and inputs masked, so no ticket, prompt or model content reaches PostHog. Sentry (error reports, US): stack traces and request metadata, not your content; Sentry's session replay is off. The model providers above, only for calls you start.
 
-**Self-hosting.** None of this applies when you run Overturn yourself: the data stays on your Postgres. See [Self-hosting](/docs/self-hosting/).
+**Cookies.** A session cookie on app.overturn.run, and PostHog's first-party cookie and local storage for product analytics. The marketing site and docs set none.
 
-**Changes.** Posted here; material changes are emailed to workspace members.
+**Mobile phone numbers and SMS consent.** If you give us your mobile phone number and opt in to receive text messages from Fluorine, we use that number only to send the messages you asked for. We do not sell, rent, or share mobile phone numbers, SMS opt-in data, or consent records with third parties or affiliates for their marketing or promotional purposes. We share this information only with the service providers that deliver our messages on our behalf, and they may not use it for any other purpose. Message and data rates may apply. Reply STOP to opt out at any time, or HELP for help.
+
+**How long.** Runs not behind a case are deleted after the project's retention setting (default 90 days). Runs behind a case, and cases, corrections, captures and replay results, are kept until you delete them or the workspace. Sign-in links expire in 15 minutes, sessions in 30 days.
+
+**Who can see it.** Members of your workspace. The maintainers can reach the database to run the service and look at your content only to fix a problem you report, with your permission.
+
+**Deleting.** Archive or delete cases and revoke keys in the app. To delete a workspace and everything in it, email shireen@overturn.run from a workspace member's address; we delete within 7 days and confirm. A data processing addendum is available on request.
+
+**Security incidents.** If your data is exposed we tell workspace members by email within 72 hours of finding out.
+
+**Changes.** Posted here; material changes are emailed to workspace members before they take effect.

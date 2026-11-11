@@ -118,8 +118,9 @@ export const REASON_PACKS: Record<ReasonPack, readonly ReasonCodeOption[]> = {
   support: SUPPORT_REASON_CODES,
 };
 
+/** Support is the default pack; a claims team opts in with `reason_pack = claims`. */
 export function reasonPackFrom(raw: unknown): ReasonPack {
-  return raw === "support" ? "support" : "claims";
+  return raw === "claims" ? "claims" : "support";
 }
 
 /** Corrections with these codes are kept as evidence but never enter the suite or the export. */

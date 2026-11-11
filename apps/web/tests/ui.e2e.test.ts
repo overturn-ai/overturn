@@ -233,6 +233,8 @@ describe("web UI", () => {
           },
           reasonCode: sd.changed ? sd.code : null,
           secondsToSend: "secs" in sd ? sd.secs : 140,
+          // Two of the changed ones were marked by hand; everything else came from the assist.
+          tags: [sd.id === "c1" || sd.id === "c2" ? "draft:manual" : "draft:inserted"],
           metadata: { at: new Date(Date.now() - sd.days * day).toISOString() },
         }),
       });
@@ -241,6 +243,11 @@ describe("web UI", () => {
     await page.goto("/capture");
     await page.getByText("storm sla is 2 days").waitFor({ timeout: 15_000 });
     expect(await page.getByTestId("capture-untouched").textContent()).toMatch(/\d+%/);
+    // Draft origin: the AI-only number excludes the two hand-marked drafts.
+    await page.getByTestId("origin-ai").click();
+    await page.getByText("9 of 10 drafts went out as written").waitFor({ timeout: 10_000 });
+    expect(await page.getByTestId("capture-untouched").textContent()).toBe("90.0%");
+    await page.getByTestId("origin-all").click();
     // The handoff: the scorecard is forwardable as plain text (and the event fires).
     await page.getByTestId("copy-scorecard").click();
     await page.getByText("Copied").waitFor({ timeout: 5_000 });
@@ -256,7 +263,7 @@ describe("web UI", () => {
     await page.waitForTimeout(1500);
     await page.goto("/capture");
     await page.getByText("ray@carrier.com").waitFor({ timeout: 15_000 });
-    expect(await page.textContent("main")).toContain("Fixes kept, by expert");
+    expect(await page.textContent("main")).toContain("Fixes kept, by reviewer");
 
     // --- settings: mint an API key ---
     await page.goto("/settings");
