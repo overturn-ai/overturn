@@ -12,7 +12,35 @@ import { client } from "@/lib/api";
 import { pct } from "@/lib/utils";
 
 /**
- * The capture scorecard: the number a claims leader reads. How much of the AI's work went
+ * Copy plain text. The Clipboard API is missing or rejects when the browser withholds
+ * permission (headless Chromium, some locked-down work browsers), so fall back to a
+ * selected textarea + execCommand. Resolves false only when both fail.
+ */
+async function copyText(text: string): Promise<boolean> {
+  try {
+    if (!navigator.clipboard) throw new Error("no clipboard API");
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    const el = document.createElement("textarea");
+    el.value = text;
+    el.setAttribute("readonly", "");
+    el.style.position = "fixed";
+    el.style.opacity = "0";
+    document.body.appendChild(el);
+    el.select();
+    try {
+      return document.execCommand("copy");
+    } catch {
+      return false;
+    } finally {
+      el.remove();
+    }
+  }
+}
+
+/**
+ * The capture scorecard:the number a claims leader reads. How much of the AI's work went
  * out untouched, who is fixing the rest, and why.
  */
 export default function CapturePage() {
@@ -24,7 +52,7 @@ export default function CapturePage() {
   });
   const s = stats.data;
   const maxWeek = Math.max(1, ...(s?.weekly.map((w) => w.captures) ?? [1]));
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<"copied" | "failed" | null>(null);
 
   // The forwardable version: the three numbers and the reasons, as plain text the buyer can read
   // in an email on a phone. This is the handoff from the installer to the person who pays.
@@ -50,9 +78,9 @@ export default function CapturePage() {
       const subject = `AI draft scorecard, last ${days} days: ${pct(s?.untouchedRate ?? 0)} sent untouched`;
       window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(summary)}`;
     } else {
-      void navigator.clipboard?.writeText(summary).then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+      void copyText(summary).then((ok) => {
+        setCopied(ok ? "copied" : "failed");
+        setTimeout(() => setCopied(null), 2000);
       });
     }
   };
@@ -76,7 +104,7 @@ export default function CapturePage() {
                 onClick={() => forward("copy")}
                 data-testid="copy-scorecard"
               >
-                {copied ? "Copied" : "Copy summary"}
+                {copied === "copied" ? "Copied" : copied === "failed" ? "Copy failed" : "Copy summary"}
               </Button>
               <Button size="sm" onClick={() => forward("mail")} data-testid="forward-scorecard">
                 Send this week
