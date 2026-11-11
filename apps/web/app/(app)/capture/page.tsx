@@ -11,6 +11,28 @@ import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { client } from "@/lib/api";
 import { pct } from "@/lib/utils";
 
+/**
+ * Copy with a fallback: the async clipboard API is refused when the permission is blocked or
+ * the page is not a secure context, and a silent no-op on the handoff button is the worst outcome.
+ */
+async function copyText(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand("copy");
+    ta.remove();
+    return ok;
+  }
+}
+
 type Origin = "all" | "ai" | "manual" | "unknown";
 /** Where the draft came from, in the words the buyer reads. */
 const ORIGIN_LABEL: Record<Origin, string> = {
@@ -60,7 +82,8 @@ export default function CapturePage() {
       const subject = `${ORIGIN_LABEL[origin]} scorecard, last ${days} days: ${pct(s?.untouchedRate ?? 0)} sent untouched`;
       window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(summary)}`;
     } else {
-      void navigator.clipboard?.writeText(summary).then(() => {
+      void copyText(summary).then((ok) => {
+        if (!ok) return;
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       });

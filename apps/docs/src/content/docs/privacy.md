@@ -3,7 +3,7 @@ title: Privacy
 description: What the hosted Overturn stores, where, for how long, who processes it, and how to delete it.
 ---
 
-*Last updated 9 November 2026.*
+*Last updated 11 November 2026.*
 
 This covers the hosted service at app.overturn.run and api.overturn.run. None of it applies when you [self-host](/docs/self-hosting/): then the data stays on your Postgres.
 
@@ -18,6 +18,8 @@ We store what you send. Use the SDK's `redact` hook to drop or edit anything tha
 **Who processes it.** Railway (hosting and database, US). Resend (sign-in and invitation email). PostHog (product analytics, US): page views, the funnel events listed in our repo, and session recordings with all text and inputs masked, so no ticket, prompt or model content reaches PostHog. Sentry (error reports, US): stack traces and request metadata, not your content; Sentry's session replay is off. The model providers above, only for calls you start.
 
 **Cookies.** A session cookie on app.overturn.run, and PostHog's first-party cookie and local storage for product analytics. The marketing site and docs set none.
+
+**Mobile phone numbers and SMS consent.** If you give us your mobile phone number and opt in to receive text messages from Fluorine, we use that number only to send the messages you asked for. We do not sell, rent, or share mobile phone numbers, SMS opt-in data, or consent records with third parties or affiliates for their marketing or promotional purposes. We share this information only with the service providers that deliver our messages on our behalf, and they may not use it for any other purpose. Message and data rates may apply. Reply STOP to opt out at any time, or HELP for help.
 
 **How long.** Runs not behind a case are deleted after the project's retention setting (default 90 days). Runs behind a case, and cases, corrections, captures and replay results, are kept until you delete them or the workspace. Sign-in links expire in 15 minutes, sessions in 30 days.
 

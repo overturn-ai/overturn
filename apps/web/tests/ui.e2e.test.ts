@@ -263,7 +263,7 @@ describe("web UI", () => {
     await page.waitForTimeout(1500);
     await page.goto("/capture");
     await page.getByText("ray@carrier.com").waitFor({ timeout: 15_000 });
-    expect(await page.textContent("main")).toContain("Fixes kept, by expert");
+    expect(await page.textContent("main")).toContain("Fixes kept, by reviewer");
 
     // --- settings: mint an API key ---
     await page.goto("/settings");
