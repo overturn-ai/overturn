@@ -13,6 +13,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
   pull-requests: write
   issues: write
   id-token: write
@@ -51,6 +52,7 @@ jobs:
             1. Query Linear (API key in $LINEAR_API_KEY, GraphQL at https://api.linear.app/graphql) for issues in this product's team with label `agent-ready` in state Todo or Backlog (state type unstarted or backlog). ${{ inputs.issue && format('Only build {0}.', inputs.issue) || 'Take up to 3, smallest estimate first.' }}
             2. For each: move it to In Progress; branch `agent/<identifier>-<slug>` from main; build it per the spec's "Done when"; run the package tests and typecheck; if UI changed, run `pnpm test:personas` against a local dev server. Run the judge subagent — under 8 goes back, max 3 rounds.
             3. Commit as Shireen Kadhium <shireenkadhium1@gmail.com> with NO Co-Authored-By, Claude-Session or "Generated with" lines. Open a PR with `gh pr create` (draft if judge < 8 or any blocker from personas), body per the writing-voice skill, link the Linear issue. Move the issue to In Review with the PR link.
+            3b. Right after opening any PR, start CI on its branch with `gh workflow run ci.yml --ref <branch>` (PRs opened from here do not trigger CI by themselves); if that run fails, fix it on the same branch and run it again.
             4. Append the nightly log (docs/wiki/log/<date>.md) on main via a separate tiny PR `chore: nightly log <date>`.
             Stop when done or at 3.5 hours. Never touch .env files, never force-push, never merge.
         env:
