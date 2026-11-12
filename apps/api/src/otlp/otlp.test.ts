@@ -200,6 +200,17 @@ describe("OTLP mapper", () => {
     expect(ordered).toEqual(["lookup_customer", "chat", "set_priority"]);
   });
 
+  it("a fractional or garbage nanosecond timestamp does not throw", () => {
+    const trace = genAiTrace();
+    const spans = trace.resourceSpans![0]!.scopeSpans![0]!.spans!;
+    spans[1]!.startTimeUnixNano = spans[2]!.startTimeUnixNano;
+    spans[1]!.endTimeUnixNano = 1.5;
+    spans[2]!.endTimeUnixNano = "not-a-number";
+    const { steps } = mapOtlpTraces(trace);
+    expect(steps).toHaveLength(3);
+    expect(new Set(steps.map((st) => st.seq)).size).toBe(3);
+  });
+
   it("marks errored root spans as failed; a batch without the root emits steps but no run", () => {
     const t = genAiTrace();
     t.resourceSpans![0]!.scopeSpans![0]!.spans![0]!.status = { code: "STATUS_CODE_ERROR", message: "boom" };

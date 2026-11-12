@@ -103,10 +103,22 @@ export function spanIdToUuid(traceHex: string, spanHex: string): string {
   return traceIdToUuid(h);
 }
 
+/**
+ * A nanosecond timestamp from an untrusted payload as a bigint. OTLP/JSON sends a decimal string,
+ * some exporters send a number (possibly fractional); anything unparseable is 0, never a throw.
+ */
+function nanos(n: string | number | undefined | null): bigint {
+  if (n === undefined || n === null || n === "") return 0n;
+  try {
+    return typeof n === "number" ? BigInt(Math.trunc(n)) : BigInt(n);
+  } catch {
+    return 0n;
+  }
+}
+
 function nanosToDate(n: string | number | undefined): Date | null {
-  if (n === undefined || n === null || n === "" || n === 0) return null;
-  const big = typeof n === "string" ? BigInt(n) : BigInt(Math.trunc(n));
-  return new Date(Number(big / 1_000_000n));
+  const big = nanos(n);
+  return big === 0n ? null : new Date(Number(big / 1_000_000n));
 }
 
 function parseJsonMaybe(v: unknown): unknown {
@@ -353,19 +365,20 @@ export function mapOtlpTraces(req: OtlpExportTraceServiceRequest): MappedTrace {
     // not batch order).
     const seqOf = new Map<string, number>();
     const byStart = [...spans].sort((x, y) => {
-      const a = BigInt(x.span.startTimeUnixNano ?? 0);
-      const b = BigInt(y.span.startTimeUnixNano ?? 0);
+      const a = nanos(x.span.startTimeUnixNano);
+      const b = nanos(y.span.startTimeUnixNano);
       if (a !== b) return a < b ? -1 : 1;
       // Same start: sequential spans on a coarse clock. The one that ended first ran first.
-      const ea = BigInt(x.span.endTimeUnixNano ?? 0);
-      const eb = BigInt(y.span.endTimeUnixNano ?? 0);
+      const ea = nanos(x.span.endTimeUnixNano);
+      const eb = nanos(y.span.endTimeUnixNano);
       if (ea !== eb) return ea < eb ? -1 : 1;
       return x.spanHex < y.spanHex ? -1 : x.spanHex > y.spanHex ? 1 : 0;
     });
     let lastTick = -1;
     let tie = 0;
     for (const s of byStart) {
-      const tick = s.span.startTimeUnixNano ? seqTick(BigInt(s.span.startTimeUnixNano)) : 0;
+      const startNs = nanos(s.span.startTimeUnixNano);
+      const tick = startNs > 0n ? seqTick(startNs) : 0;
       tie = tick === lastTick ? tie + 1 : 0;
       lastTick = tick;
       seqOf.set(s.spanHex, tick + tie);
