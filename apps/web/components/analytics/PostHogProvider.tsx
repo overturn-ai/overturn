@@ -4,14 +4,12 @@ import { usePathname, useSearchParams } from "next/navigation";
 import posthog from "posthog-js";
 import { PostHogProvider as PHProvider } from "posthog-js/react";
 import { Suspense, useEffect } from "react";
+import { posthogKey } from "./posthog-key";
 
-// Project token is a public, write-only key (safe in client code per PostHog). The production default below
-// is used only on the production host; set NEXT_PUBLIC_POSTHOG_KEY to override or to capture from previews.
-const PROD_HOSTS = ["app.overturn.run", "www.app.overturn.run"];
-const PROD_KEY = "phc_vWUxkGb2jZG3mjQfnSXN7XEqpVS5kaGtHJurf5sSc8ED";
-const KEY =
-  process.env.NEXT_PUBLIC_POSTHOG_KEY ||
-  (typeof window !== "undefined" && PROD_HOSTS.includes(window.location.hostname) ? PROD_KEY : undefined);
+const KEY = posthogKey(
+  typeof window !== "undefined" ? window.location.hostname : undefined,
+  process.env.NEXT_PUBLIC_POSTHOG_KEY,
+);
 const HOST = process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://us.i.posthog.com";
 
 if (typeof window !== "undefined" && KEY && !posthog.__loaded) {
