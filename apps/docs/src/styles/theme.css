@@ -38,3 +38,11 @@
 .sl-markdown-content :is(h1, h2, h3) { color: var(--sl-color-white); }
 .sl-markdown-content code:not(pre code) { border: 1px solid var(--sl-color-hairline); padding: 0.1em 0.35em; border-radius: 4px; }
 header.header { border-bottom: 1px solid var(--sl-color-hairline); }
+
+/* Phones: header controls, heading anchors and the edit link are at least 44px to tap. */
+@media (max-width: 50rem) {
+  .site-title { min-height: 44px; }
+  site-search button[data-open-modal], starlight-menu-button button { min-width: 44px; min-height: 44px; justify-content: center; }
+  .sl-anchor-link { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; }
+  .meta a, .pagination-links a, footer a { display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; }
+}

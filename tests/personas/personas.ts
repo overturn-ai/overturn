@@ -34,16 +34,38 @@ export async function assertMobileSane(page: Page) {
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
   if (overflow) throw new Error("horizontal scroll on phone");
   const small = await page.evaluate(() => {
-    const els = Array.from(document.querySelectorAll("a,button,[role=button],input,select"));
+    const MIN = 44;
+    const els = Array.from(document.querySelectorAll<HTMLElement>("a,button,[role=button],input,select"));
+    const hidden = (e: HTMLElement) => {
+      if (!e.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) return true;
+      const cs = getComputedStyle(e);
+      // Screen-reader-only and skip links: clipped to nothing until focused.
+      if (cs.clipPath !== "none" || cs.clip !== "auto") return true;
+      const r = e.getBoundingClientRect();
+      return r.width <= 1 || r.height <= 1 || r.right <= 0 || r.bottom + window.scrollY <= 0;
+    };
+    // WCAG 2.5.8 exempts links inside a sentence: their size is set by the line of text they sit in.
+    const inlineInText = (e: HTMLElement) => {
+      if (e.tagName !== "A" || getComputedStyle(e).display !== "inline") return false;
+      const p = e.parentElement;
+      if (!p) return false;
+      return Array.from(p.childNodes).some(
+        (n) => n.nodeType === Node.TEXT_NODE && (n.textContent ?? "").trim().length > 0,
+      );
+    };
     return els
       .filter((e) => {
-        const r = (e as HTMLElement).getBoundingClientRect();
-        return r.width > 0 && r.height > 0 && (r.width < 44 || r.height < 44);
+        if (hidden(e) || inlineInText(e)) return false;
+        const r = e.getBoundingClientRect();
+        return r.width < MIN || r.height < MIN;
       })
-      .slice(0, 5)
-      .map((e) => (e as HTMLElement).outerHTML.slice(0, 80));
+      .map((e) => {
+        const r = e.getBoundingClientRect();
+        return `${Math.round(r.width)}x${Math.round(r.height)} ${e.outerHTML.replace(/\s+/g, " ").slice(0, 70)}`;
+      });
   });
-  if (small.length) throw new Error(`tap targets under 44px: ${small.join(" | ")}`);
+  if (small.length)
+    throw new Error(`${small.length} tap targets under 44px: ${small.slice(0, 12).join(" | ")}`);
 }
 
 /** Impatient: a step must give feedback within patienceMs. */
