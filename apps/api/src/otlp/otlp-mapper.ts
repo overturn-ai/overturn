@@ -349,12 +349,17 @@ export function mapOtlpTraces(req: OtlpExportTraceServiceRequest): MappedTrace {
     const parentOf = new Map(spans.map((s) => [s.spanHex, s.parentHex] as const));
     // seq = start time at 100ns resolution since 2020 (fits a JS safe integer), so spans
     // from different export batches of the same trace still interleave correctly; spans
-    // that share a tick get consecutive seqs in span-id order (deterministic, not batch order).
+    // that share a tick get consecutive seqs in end-time order, then span-id order (deterministic,
+    // not batch order).
     const seqOf = new Map<string, number>();
     const byStart = [...spans].sort((x, y) => {
       const a = BigInt(x.span.startTimeUnixNano ?? 0);
       const b = BigInt(y.span.startTimeUnixNano ?? 0);
       if (a !== b) return a < b ? -1 : 1;
+      // Same start: sequential spans on a coarse clock. The one that ended first ran first.
+      const ea = BigInt(x.span.endTimeUnixNano ?? 0);
+      const eb = BigInt(y.span.endTimeUnixNano ?? 0);
+      if (ea !== eb) return ea < eb ? -1 : 1;
       return x.spanHex < y.spanHex ? -1 : x.spanHex > y.spanHex ? 1 : 0;
     });
     let lastTick = -1;

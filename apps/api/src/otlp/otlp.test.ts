@@ -165,7 +165,7 @@ describe("OTLP mapper", () => {
     expect(steps[0]!.input).toEqual({ email: "a@b.c" });
   });
 
-  it("spans that start in the same tick get distinct seqs in span-id order, whatever the batch order", () => {
+  it("spans that start in the same tick get distinct seqs in a stable order, whatever the batch order", () => {
     const trace = genAiTrace();
     const spans = trace.resourceSpans![0]!.scopeSpans![0]!.spans!;
     for (const s of spans) s.startTimeUnixNano = ns(5);
@@ -176,8 +176,28 @@ describe("OTLP mapper", () => {
     const ordered = [...steps].sort((a, b) => a.seq - b.seq).map((st) => st.name);
     expect(ordered).toEqual(["lookup_customer", "chat", "set_priority"]);
     // seq is the start time at 100ns resolution since 2020, so later batches interleave correctly
-    expect(Math.min(...seqs)).toBe(Number((T0 + 5_000_000n - 1_577_836_800_000_000_000n) / 100n));
+    const tick = Number((T0 + 5_000_000n - 1_577_836_800_000_000_000n) / 100n);
+    expect(Math.min(...seqs)).toBeGreaterThanOrEqual(tick);
+    expect(Math.max(...seqs)).toBeLessThan(tick + spans.length);
     expect(Math.max(...seqs)).toBeLessThan(Number.MAX_SAFE_INTEGER);
+  });
+
+  it("spans that start at the same instant are ordered by when they ended, not by span id", () => {
+    const trace = genAiTrace();
+    const spans = trace.resourceSpans![0]!.scopeSpans![0]!.spans!;
+    const steps3 = spans.filter((s) =>
+      ["lookup_customer", "chat", "set_priority"].some((n) => s.name?.includes(n)),
+    );
+    // A coarse clock: all three start together, each ends later than the one before it, and the
+    // span ids sort the other way round.
+    steps3.forEach((s, i) => {
+      s.startTimeUnixNano = ns(5);
+      s.endTimeUnixNano = ns(6 + i);
+      s.spanId = `${(9 - i).toString(16)}${"0".repeat(15)}`;
+    });
+    const { steps } = mapOtlpTraces(trace);
+    const ordered = [...steps].sort((x, y) => x.seq - y.seq).map((st) => st.name);
+    expect(ordered).toEqual(["lookup_customer", "chat", "set_priority"]);
   });
 
   it("marks errored root spans as failed; a batch without the root emits steps but no run", () => {
