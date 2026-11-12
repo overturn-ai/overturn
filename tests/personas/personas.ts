@@ -38,7 +38,15 @@ export async function assertMobileSane(page: Page) {
     return els
       .filter((e) => {
         const r = (e as HTMLElement).getBoundingClientRect();
-        return r.width > 0 && r.height > 0 && (r.width < 44 || r.height < 44);
+        if (!(r.width > 0 && r.height > 0 && (r.width < 44 || r.height < 44))) return false;
+        // WCAG 2.5.5 exceptions: what the user cannot see is not a target (skip links, a closed menu)…
+        if (!e.checkVisibility({ visibilityProperty: true, opacityProperty: true })) return false;
+        const cs = getComputedStyle(e);
+        if (cs.clip === "rect(0px, 0px, 0px, 0px)" || cs.clipPath === "inset(50%)") return false;
+        if (r.right <= 0 || r.left >= window.innerWidth) return false;
+        // …and a link inside a sentence is sized by the sentence.
+        if (cs.display === "inline" && e.closest("p,li,td,dd,blockquote,figcaption")) return false;
+        return true;
       })
       .slice(0, 5)
       .map((e) => (e as HTMLElement).outerHTML.slice(0, 80));

@@ -310,6 +310,18 @@
   footer .wrap{display:flex;gap:24px;flex-wrap:wrap;align-items:center}
   footer .r{margin-left:auto;display:flex;gap:22px}
   footer a:hover{color:var(--fg)}
+  /* phone: every tap target is at least 44px (padding grows the hit area, negative margin keeps the layout) */
+  @media (max-width:640px){
+    .ann a{padding-block:11px;margin-block:-11px}
+    nav.top .brand{padding-block:9px;margin-block:-9px}
+    .btn.sm{height:44px}
+    .link{padding-block:10px;margin-block:-10px}
+    .cards .link{margin-top:6px}
+    .dots{gap:0}
+    .dots button:not(.pp){box-sizing:content-box;padding:18px;background-clip:content-box}
+    footer .r{gap:10px;flex-wrap:wrap}
+    footer .r a{padding:12px 6px;margin:-12px -6px}
+  }
   @media (prefers-reduced-motion:reduce){.step.on .bar{animation:none;width:100%}.cursor::after{animation:none}}
 </style>
 </head>
