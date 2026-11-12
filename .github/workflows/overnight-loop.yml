@@ -56,6 +56,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+      - name: No agent attribution in PR bodies
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash scripts/strip-pr-attribution.sh 240 || echo "strip failed (non-fatal)"
       - name: Text Shireen about PRs this run opened
         if: always()
         env:

@@ -44,5 +44,7 @@ header.header { border-bottom: 1px solid var(--sl-color-hairline); }
   .site-title { min-height: 44px; }
   site-search button[data-open-modal], starlight-menu-button button { min-width: 44px; min-height: 44px; justify-content: center; }
   .sl-anchor-link { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; }
+  .social-icons a { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; }
+  .expressive-code .copy button { width: 44px; height: 44px; }
   .meta a, .pagination-links a, footer a { display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; }
 }
