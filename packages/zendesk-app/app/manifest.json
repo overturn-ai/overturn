@@ -38,15 +38,15 @@
       "name": "agent",
       "type": "text",
       "required": false,
-      "default": "claims-reply",
+      "default": "support-reply",
       "helpText": "The workflow name. One regression suite per workflow."
     },
     {
       "name": "reason_pack",
       "type": "text",
       "required": false,
-      "default": "claims",
-      "helpText": "Which one-click reasons agents see when they change a draft: \"claims\" (coverage, reserve, exclusion...) or \"support\" (wrong answer, missing information, should have escalated...)."
+      "default": "support",
+      "helpText": "Which one-click reasons agents see when they change a draft: \"support\" (wrong answer, missing information, should have escalated...) or \"claims\" (coverage, reserve, exclusion...). Defaults to support."
     },
     {
       "name": "require_reason",

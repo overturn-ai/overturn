@@ -47,6 +47,7 @@ jobs:
             Issue: "${{ github.event.client_payload.issue_url || inputs.issue_url }}" — if empty, list unresolved issues in those projects with firstSeen in the last 40 minutes (GET /api/0/organizations/fluorine-nf/issues/?query=is:unresolved firstSeen:-40m&project=<id>), skip any whose comments already contain a github.com/.../pull/ link, and take the one with the most events. If there is none, print "no new Sentry issues" and stop.
             Follow .claude/skills/bug-fix-pr/SKILL.md exactly: failing test first, smallest fix, PR titled `fix: <symptom> (SENTRY-<short id>)`, label `agent-fix`, author Shireen Kadhium <shireenkadhium1@gmail.com>, no trailers; then POST a comment on the Sentry issue with the PR link. Ten-minute budget; past it, open a draft with findings and stop.
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       - name: Text Shireen about PRs this run opened
         if: always()

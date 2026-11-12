@@ -6,6 +6,7 @@ import {
   type CaptureStatsQuery,
   captureAnswerValue,
   captureSystemPrompt,
+  type DraftOrigin,
   diffCaptureAnswers,
   extractAnswer,
   projectSettingsSchema,
@@ -74,12 +75,13 @@ export class CaptureService {
    */
   async stats(projectId: string, q: CaptureStatsQuery): Promise<CaptureStats> {
     const since = new Date(Date.now() - q.days * 86_400_000);
-    const where = [
+    const base = [
       eq(corrections.projectId, projectId),
       eq(corrections.source, "capture"),
       gte(corrections.createdAt, since),
       ...(q.agent ? [eq(runs.agent, q.agent)] : []),
     ];
+    const where = [...base, ...(q.origin === "all" ? [] : [sql`${DRAFT_ORIGIN} = ${q.origin}`])];
     const edited = sql<number>`count(*) filter (where ${corrections.kind} = 'edit')::int`;
     const count = sql<number>`count(*)::int`;
 
@@ -148,6 +150,13 @@ export class CaptureService {
       .where(and(...where))
       .groupBy(source)
       .orderBy(desc(count));
+    const byOrigin = await this.db
+      .select({ origin: sql<DraftOrigin>`${DRAFT_ORIGIN}`, captures: count, edited })
+      .from(corrections)
+      .innerJoin(runs, eq(runs.id, corrections.runId))
+      .where(and(...base))
+      .groupBy(sql`${DRAFT_ORIGIN}`)
+      .orderBy(sql`${DRAFT_ORIGIN}`);
     const byAgent = await this.db
       .select({ agent: runs.agent, captures: count, edited })
       .from(corrections)
@@ -170,6 +179,7 @@ export class CaptureService {
     const rate = (c: number, e: number) => (c === 0 ? 0 : (c - e) / c);
     return {
       days: q.days,
+      origin: q.origin,
       captures,
       untouched: captures - editedN,
       edited: editedN,
@@ -179,6 +189,7 @@ export class CaptureService {
       timeToSend,
       byReason,
       bySource,
+      byOrigin,
       byAgent,
       weekly: weekly.map((w) => ({ ...w, weekStart: new Date(w.weekStart).toISOString() })),
     };
@@ -275,7 +286,7 @@ export class CaptureService {
           },
           output: draftValue as never,
           metadata: { ...(input.metadata ?? {}), capture: input.source },
-          tags: [`capture:${input.source}`, ...(input.tags ?? [])],
+          tags: [`capture:${input.source}`, ...(input.tags ?? []), ...originTag(input)],
           startedAt: now,
           endedAt: now,
         },
@@ -307,6 +318,26 @@ export class CaptureService {
     });
     return { runId, stepId };
   }
+}
+
+/**
+ * Where the draft came from, as SQL over the run. The Zendesk app tags the run `draft:inserted`
+ * (an assist or macro put it in the composer), `draft:preloaded` (it was there when the ticket
+ * opened), `draft:recorded` (the drafting agent's own SDK run) or `draft:manual` (the expert
+ * marked the text by hand). A run that was not synthesized by capture was recorded by the agent,
+ * so it is AI too. Everything else is unknown: the scorecard never guesses.
+ */
+const DRAFT_ORIGIN = sql<DraftOrigin>`case
+  when ${runs.tags} && array['draft:inserted','draft:preloaded','draft:recorded','draft:ai']::text[] then 'ai'
+  when 'draft:manual' = any(${runs.tags}) then 'manual'
+  when ${runs.metadata} ->> 'capture' is null then 'ai'
+  else 'unknown' end`;
+
+/** An API caller that names the drafting model has told us an AI wrote it; tag it so the scorecard can filter. */
+function originTag(input: CaptureCreate): string[] {
+  const hasOrigin = (input.tags ?? []).some((t) => t.startsWith("draft:"));
+  if (hasOrigin) return [];
+  return input.draftModel || input.draftProvider ? ["draft:ai"] : [];
 }
 
 function sameAnswer(a: unknown, b: unknown): boolean {

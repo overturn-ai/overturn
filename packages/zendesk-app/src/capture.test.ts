@@ -61,16 +61,19 @@ describe("settings", () => {
     expect(inScope(["billing", "ai_drafted"], scoped)).toBe(true);
   });
 
-  it("reason_pack picks the chips: claims by default, support for any other team", () => {
-    expect(quickReasons(DEFAULT_SETTINGS).map((r) => r.code)).toContain("wrong_coverage_decision");
-    const support = settingsFrom({ reason_pack: "support" });
+  it("reason_pack picks the chips: support by default, claims when a claims team opts in", () => {
+    expect(quickReasons(DEFAULT_SETTINGS).map((r) => r.code)).toContain("wrong_answer");
+    expect(quickReasons(settingsFrom({ reason_pack: "claims" })).map((r) => r.code)).toContain(
+      "wrong_coverage_decision",
+    );
+    const support = settingsFrom({});
     const codes = quickReasons(support).map((r) => r.code);
     expect(codes).toContain("wrong_answer");
     expect(codes).toContain("should_escalate");
     expect(codes).not.toContain("reserve_too_low");
     // both packs keep tone/wording so the suite exclusion applies to either
     expect(codes).toContain("tone_wording");
-    expect(settingsFrom({ reason_pack: "garbage" }).reasonPack).toBe("claims");
+    expect(settingsFrom({ reason_pack: "garbage" }).reasonPack).toBe("support");
   });
 
   it("falls back to defaults, with require_reason on", () => {
@@ -155,7 +158,7 @@ describe("decideOnSend", () => {
     if (d.action !== "capture") return;
     expect(d.changed).toBe(false);
     expect(d.body.externalId).toBe("zd:48213");
-    expect(d.body.agent).toBe("claims-reply");
+    expect(d.body.agent).toBe("support-reply");
     expect(d.body.draft.text).toBe(d.body.sent.text);
     expect(d.body.tags).toEqual(["draft:inserted", "public-reply"]);
     expect(typeof d.body.secondsToSend).toBe("number");

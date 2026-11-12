@@ -54,6 +54,7 @@ jobs:
             4. Append the nightly log (docs/wiki/log/<date>.md) on main via a separate tiny PR `chore: nightly log <date>`.
             Stop when done or at 3.5 hours. Never touch .env files, never force-push, never merge.
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
       - name: Text Shireen about PRs this run opened
         if: always()

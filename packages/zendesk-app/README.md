@@ -19,7 +19,8 @@ Overturn failing never blocks the agent's work; the panel says what happened.
 3. Zendesk Admin Center → Apps and integrations → Zendesk Support apps → **Upload private app** → the zip.
 4. Settings:
    - `overturn_api_key` (secure; Zendesk keeps it server-side and signs the requests)
-   - `agent`: the workflow name, one regression suite per workflow (default `claims-reply`)
+   - `reason_pack`: `support` (default) or `claims`, the one-click reasons agents see
+   - `agent`: the workflow name, one regression suite per workflow (default `support-reply`; a claims team might use `claims-reply`)
    - `decision_fields`: custom fields that *are* the decision, as `id:label` pairs, e.g. `custom_field_123:status, custom_field_456:reserve`. Changes to these are scored exactly; the prose is scored by the judge.
    - `require_reason`, `capture_internal_notes`, `min_draft_chars`, `overturn_base_url` (self-hosting; add the host to `domainWhitelist` in `manifest.json`).
 

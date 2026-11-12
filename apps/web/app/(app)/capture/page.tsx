@@ -12,15 +12,47 @@ import { client } from "@/lib/api";
 import { pct } from "@/lib/utils";
 
 /**
- * The capture scorecard: the number a claims leader reads. How much of the AI's work went
+ * Copy with a fallback: the async clipboard API is refused when the permission is blocked or
+ * the page is not a secure context, and a silent no-op on the handoff button is the worst outcome.
+ */
+async function copyText(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand("copy");
+    ta.remove();
+    return ok;
+  }
+}
+
+type Origin = "all" | "ai" | "manual" | "unknown";
+/** Where the draft came from, in the words the buyer reads. */
+const ORIGIN_LABEL: Record<Origin, string> = {
+  all: "All drafts",
+  ai: "AI drafts",
+  manual: "Marked by hand",
+  unknown: "Origin unknown",
+};
+
+/**
+ * The capture scorecard: the number a support lead reads. How much of the AI's work went
  * out untouched, who is fixing the rest, and why.
  */
 export default function CapturePage() {
   const [days, setDays] = useState(30);
   const [agent, setAgent] = useState("");
+  const [origin, setOrigin] = useState<Origin>("all");
   const stats = useQuery({
-    queryKey: ["capture-stats", days, agent],
-    queryFn: () => client.corrections.captureStats({ days, agent: agent || undefined }),
+    queryKey: ["capture-stats", days, agent, origin],
+    queryFn: () => client.corrections.captureStats({ days, agent: agent || undefined, origin }),
   });
   const s = stats.data;
   const maxWeek = Math.max(1, ...(s?.weekly.map((w) => w.captures) ?? [1]));
@@ -30,11 +62,11 @@ export default function CapturePage() {
   // in an email on a phone. This is the handoff from the installer to the person who pays.
   const summary = s
     ? [
-        `AI drafts, last ${days} days${agent ? ` (${agent})` : ""}`,
+        `${ORIGIN_LABEL[origin]}, last ${days} days${agent ? ` (${agent})` : ""}`,
         ``,
         `Sent untouched: ${pct(s.untouchedRate)} (${s.untouched} of ${s.captures})`,
         `Fixes kept: ${s.edited}`,
-        `Experts capturing: ${s.experts}`,
+        `Reviewers capturing: ${s.experts}`,
         ``,
         ...(s.byReason.length
           ? ["Why drafts were changed:", ...s.byReason.map((r) => `  ${r.label}: ${r.count}`)]
@@ -47,10 +79,11 @@ export default function CapturePage() {
   const forward = (how: "mail" | "copy") => {
     track.scorecardForwarded();
     if (how === "mail") {
-      const subject = `AI draft scorecard, last ${days} days: ${pct(s?.untouchedRate ?? 0)} sent untouched`;
+      const subject = `${ORIGIN_LABEL[origin]} scorecard, last ${days} days: ${pct(s?.untouchedRate ?? 0)} sent untouched`;
       window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(summary)}`;
     } else {
-      void navigator.clipboard?.writeText(summary).then(() => {
+      void copyText(summary).then((ok) => {
+        if (!ok) return;
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       });
@@ -63,8 +96,8 @@ export default function CapturePage() {
         <div>
           <h1 className="text-lg font-semibold">Capture</h1>
           <p className="text-sm text-muted-foreground">
-            Every reply your experts sent from the tool they work in, scored: untouched means the draft went
-            out as written.
+            Every reply your team sent from the help desk, scored: untouched means the AI draft went out as
+            written.
           </p>
         </div>
         <div className="flex items-end gap-2">
@@ -84,7 +117,7 @@ export default function CapturePage() {
             </>
           ) : null}
           <Input
-            placeholder="agent"
+            placeholder="workflow"
             className="w-40"
             value={agent}
             onChange={(e) => setAgent(e.target.value)}
@@ -97,6 +130,43 @@ export default function CapturePage() {
           </NativeSelect>
         </div>
       </div>
+
+      {s && s.byOrigin.length > 0 ? (
+        <div className="flex flex-wrap items-center gap-1.5 text-sm" data-testid="origin-filter">
+          {(["all", "ai", "manual", "unknown"] as const).map((o) => {
+            const n =
+              o === "all"
+                ? s.byOrigin.reduce((acc, x) => acc + x.captures, 0)
+                : (s.byOrigin.find((x) => x.origin === o)?.captures ?? 0);
+            if (o !== "all" && n === 0 && origin !== o) return null;
+            return (
+              <button
+                key={o}
+                type="button"
+                onClick={() => setOrigin(o)}
+                data-testid={`origin-${o}`}
+                aria-pressed={origin === o}
+                className={`rounded-md border px-2 py-0.5 font-mono text-xs tabular-nums ${
+                  origin === o
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-border text-muted-foreground"
+                }`}
+              >
+                {ORIGIN_LABEL[o]} {n}
+              </button>
+            );
+          })}
+          <span className="ml-1 text-xs text-muted-foreground">
+            {origin === "ai"
+              ? "only drafts an assist inserted or an agent run recorded: the clean AI number"
+              : origin === "manual"
+                ? "drafts the reviewer marked by hand; may be AI pasted from another tool"
+                : origin === "unknown"
+                  ? "captures that did not say where the draft came from"
+                  : "AI-drafted vs marked by hand; pick one for a clean number"}
+          </span>
+        </div>
+      ) : null}
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>
@@ -115,7 +185,7 @@ export default function CapturePage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardDescription>Expert fixes kept</CardDescription>
+            <CardDescription>Fixes kept</CardDescription>
             <CardTitle className="font-mono text-3xl font-normal tabular-nums">
               {s ? s.edited : "—"}
             </CardTitle>
@@ -132,7 +202,7 @@ export default function CapturePage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardDescription>Experts capturing</CardDescription>
+            <CardDescription>Reviewers capturing</CardDescription>
             <CardTitle className="font-mono text-3xl font-normal tabular-nums">
               {s ? s.experts : "—"}
             </CardTitle>
@@ -147,7 +217,7 @@ export default function CapturePage() {
         <Card>
           <CardContent className="py-8 text-sm text-muted-foreground">
             Nothing captured in this window. Install the Zendesk app or call <code>POST /v1/capture</code>{" "}
-            from the tool your experts work in; the first reply they send shows up here.
+            from your help desk; the first reply your team sends shows up here.
           </CardContent>
         </Card>
       ) : null}
@@ -185,13 +255,13 @@ export default function CapturePage() {
         {s && s.byExpert.length > 0 ? (
           <Card>
             <CardHeader>
-              <CardDescription>Fixes kept, by expert</CardDescription>
+              <CardDescription>Fixes kept, by reviewer</CardDescription>
             </CardHeader>
             <CardContent className="p-0">
               <Table>
                 <THead>
                   <TR>
-                    <TH>Expert</TH>
+                    <TH>Reviewer</TH>
                     <TH className="text-right">Fixes kept</TH>
                   </TR>
                 </THead>
@@ -205,7 +275,8 @@ export default function CapturePage() {
                 </TBody>
               </Table>
               <p className="px-4 py-2 text-xs text-muted-foreground">
-                Credit for expertise captured. There is no per-person rate anywhere in Overturn.
+                Credit for the fixes each reviewer taught the AI. There is no per-person rate anywhere in
+                Overturn.
               </p>
             </CardContent>
           </Card>
@@ -245,7 +316,7 @@ export default function CapturePage() {
         )}
         <Card>
           <CardHeader>
-            <CardDescription>Why experts changed the draft</CardDescription>
+            <CardDescription>Why reviewers changed the draft</CardDescription>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
@@ -289,7 +360,7 @@ export default function CapturePage() {
             <Table>
               <THead>
                 <TR>
-                  <TH>Agent</TH>
+                  <TH>Workflow</TH>
                   <TH className="text-right">Captured</TH>
                   <TH className="text-right">Edited</TH>
                 </TR>

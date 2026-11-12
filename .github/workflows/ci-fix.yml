@@ -60,6 +60,8 @@ jobs:
             (b) Re-run the failed workflow once with `gh run rerun --failed` and stop.
             (c) Open nothing; write a 3-line explanation to ./needs-human.txt naming the secret or service.
             Never touch .env files, never force-push, never merge. Twenty-minute budget; past it, open a draft PR with findings.
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Text Shireen
         if: always()
         env:

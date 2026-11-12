@@ -19,7 +19,7 @@
       },
       "reason_pack": {
         "label": "Reason pack",
-        "helpText": "Which one-click reasons agents see when they change a draft: \"claims\" (coverage, reserve, exclusion...) or \"support\" (wrong answer, missing information, should have escalated...)."
+        "helpText": "Which one-click reasons agents see when they change a draft: \"support\" (wrong answer, missing information, should have escalated...) or \"claims\" (coverage, reserve, exclusion...). Defaults to support."
       },
       "require_reason": {
         "label": "Require a reason for changed replies",
