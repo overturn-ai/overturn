@@ -4,6 +4,12 @@ name: Persona tests on preview
 # App previews (Vercel / Railway) get the full suite with BASE_URL; the docs/marketing deploy (GitHub Pages) only runs the marketing/docs tests.
 on:
   deployment_status:
+  # Manual run against any URL, so the workflow itself can be checked without waiting for a deploy.
+  workflow_dispatch:
+    inputs:
+      url:
+        description: Deployment URL to test (a docs URL runs only the marketing/docs tests)
+        required: true
 
 permissions:
   contents: read
@@ -11,7 +17,7 @@ permissions:
 
 jobs:
   personas:
-    if: github.event.deployment_status.state == 'success' && github.event.deployment.environment != 'Production' && github.event.deployment.environment != 'production'
+    if: github.event_name == 'workflow_dispatch' || (github.event.deployment_status.state == 'success' && github.event.deployment.environment != 'Production' && github.event.deployment.environment != 'production')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -27,14 +33,15 @@ jobs:
         id: target
         env:
           ENV_NAME: ${{ github.event.deployment.environment }}
-          URL: ${{ github.event.deployment_status.environment_url || github.event.deployment_status.target_url }}
+          URL: ${{ inputs.url || github.event.deployment_status.environment_url || github.event.deployment_status.target_url }}
         run: |
+          URL="${URL%/}"
           if [[ "$ENV_NAME" == *pages* || "$URL" == *docs.* ]]; then
             echo "docs_url=$URL" >> "$GITHUB_OUTPUT"; echo "grep=marketing|docs" >> "$GITHUB_OUTPUT"
           else
             echo "base_url=$URL" >> "$GITHUB_OUTPUT"; echo "grep=." >> "$GITHUB_OUTPUT"
           fi
-      - run: pnpm test:personas -- --grep "${{ steps.target.outputs.grep }}"
+      - run: pnpm test:personas --grep "${{ steps.target.outputs.grep }}"
         env:
           BASE_URL: ${{ steps.target.outputs.base_url || 'http://localhost:3000' }}
           DOCS_URL: ${{ steps.target.outputs.docs_url }}
