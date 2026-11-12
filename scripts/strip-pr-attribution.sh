@@ -4,7 +4,9 @@
 # Usage: strip-pr-attribution.sh [minutes]   (PRs opened in the last N minutes, default 60)
 set -euo pipefail
 since=$(date -u -d "-${1:-60} minutes" +%Y-%m-%dT%H:%M:%SZ)
-for n in $(gh pr list --state open --search "created:>=$since" --json number --jq '.[].number'); do
+# Only this repo's agent branches: never a fork's PR or one a person opened by hand.
+for n in $(gh pr list --state open --search "created:>=$since" --json number,headRefName,isCrossRepository \
+  --jq '.[] | select(.isCrossRepository | not) | select(.headRefName | test("^(agent|fix)/")) | .number'); do
   body=$(gh pr view "$n" --json body --jq .body)
   clean=$(printf '%s\n' "$body" | python3 -c '
 import re, sys
