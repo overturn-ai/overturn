@@ -3,9 +3,9 @@ title: Terms of service
 description: Terms for the hosted Overturn at app.overturn.run during the free beta.
 ---
 
-*Last updated 9 November 2026. The hosted service is in a free beta; these terms are short on purpose and will change when it is not.*
+*Last updated 11 November 2026. The hosted service is in a free beta; these terms are short on purpose and will change when it is not.*
 
-**The service.** app.overturn.run and api.overturn.run ("the hosted service") are operated by Overturn's maintainers. The software itself is open source under the Apache-2.0 license and you can run it yourself; these terms cover only the hosted service.
+**The service.** app.overturn.run and api.overturn.run ("the hosted service") are operated by Fluorine Technologies, Inc. ("we"). The software itself is open source under the Apache-2.0 license and you can run it yourself; these terms cover only the hosted service.
 
 **Beta.** The hosted service is provided as is, free of charge, without warranty of any kind and without an uptime commitment. We may change, limit or shut down the hosted service, and will try to give notice and a way to export your data when we do.
 
