@@ -127,5 +127,7 @@ print(len(frames), "frames")
   ],
   { stdio: "inherit" },
 );
+// the frames are only needed to build the GIF; drop them so /tmp does not fill up across runs
+rmSync(videoDir, { recursive: true, force: true });
 console.log(`wrote ${OUT}`);
 process.exit(0);
