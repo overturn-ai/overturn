@@ -9,7 +9,7 @@ export default defineConfig({
     starlight({
       title: "Overturn",
       description: "Every human correction of an AI agent becomes a replayable regression test.",
-      logo: { src: "./public/logo-dark.svg", replacesTitle: true },
+      logo: { light: "./public/logo.svg", dark: "./public/logo-dark.svg", replacesTitle: true },
       favicon: "/favicon.svg",
       social: [{ icon: "github", label: "GitHub", href: "https://github.com/overturn-ai/overturn" }],
       customCss: ["./src/styles/theme.css"],

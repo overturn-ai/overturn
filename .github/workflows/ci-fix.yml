@@ -63,6 +63,11 @@ jobs:
             Never touch .env files, never force-push, never merge. Twenty-minute budget; past it, open a draft PR with findings.
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: No agent attribution in PR bodies
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash scripts/strip-pr-attribution.sh 240 || echo "strip failed (non-fatal)"
       - name: Text Shireen
         if: always()
         env:
