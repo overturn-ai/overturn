@@ -12,7 +12,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
-  actions: read
+  actions: write
   id-token: write
 
 concurrency:
@@ -59,6 +59,7 @@ jobs:
             (a) Follow .claude/skills/bug-fix-pr/SKILL.md: failing test first if possible, smallest fix, branch fix/ci-<short>, PR titled `fix: <what broke>`, label agent-fix, author Shireen Kadhium <shireenkadhium1@gmail.com>, no trailers. Run the relevant package tests before opening.
             (b) Re-run the failed workflow once with `gh run rerun --failed` and stop.
             (c) Open nothing; write a 3-line explanation to ./needs-human.txt naming the secret or service.
+            Right after opening any PR, start CI on its branch with `gh workflow run ci.yml --ref <branch>` (PRs opened from here do not trigger CI by themselves); if that run fails, fix it on the same branch and run it again.
             Never touch .env files, never force-push, never merge. Twenty-minute budget; past it, open a draft PR with findings.
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

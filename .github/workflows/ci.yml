@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
   pull_request:
+  # PRs opened by the agent workflows do not trigger CI on their own (GitHub does not start workflows for
+  # GITHUB_TOKEN events), so the agent dispatches this on its branch after opening the PR.
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}

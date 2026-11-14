@@ -17,6 +17,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
   pull-requests: write
   id-token: write
 
@@ -45,7 +46,7 @@ jobs:
           prompt: |
             Sentry org: fluorine-nf. Projects: overturn-web,overturn-api. Token in $SENTRY_AUTH_TOKEN (Bearer, https://sentry.io/api/0/).
             Issue: "${{ github.event.client_payload.issue_url || inputs.issue_url }}" — if empty, list unresolved issues in those projects with firstSeen in the last 40 minutes (GET /api/0/organizations/fluorine-nf/issues/?query=is:unresolved firstSeen:-40m&project=<id>), skip any whose comments already contain a github.com/.../pull/ link, and take the one with the most events. If there is none, print "no new Sentry issues" and stop.
-            Follow .claude/skills/bug-fix-pr/SKILL.md exactly: failing test first, smallest fix, PR titled `fix: <symptom> (SENTRY-<short id>)`, label `agent-fix`, author Shireen Kadhium <shireenkadhium1@gmail.com>, no trailers; then POST a comment on the Sentry issue with the PR link. Ten-minute budget; past it, open a draft with findings and stop.
+            Follow .claude/skills/bug-fix-pr/SKILL.md exactly: failing test first, smallest fix, PR titled `fix: <symptom> (SENTRY-<short id>)`, label `agent-fix`, author Shireen Kadhium <shireenkadhium1@gmail.com>, no trailers; then POST a comment on the Sentry issue with the PR link. Right after opening any PR, start CI on its branch with `gh workflow run ci.yml --ref <branch>` (PRs opened from here do not trigger CI by themselves); if that run fails, fix it on the same branch and run it again. Ten-minute budget; past it, open a draft with findings and stop.
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}

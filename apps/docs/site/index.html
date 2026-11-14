@@ -310,18 +310,20 @@
   footer .wrap{display:flex;gap:24px;flex-wrap:wrap;align-items:center}
   footer .r{margin-left:auto;display:flex;gap:22px}
   footer a:hover{color:var(--fg)}
-  @media (prefers-reduced-motion:reduce){.step.on .bar{animation:none;width:100%}.cursor::after{animation:none}}
-  /* Phones: every control is at least 44px to tap. Sizes are unchanged on desktop. */
+  /* phone: every tap target is at least 44px (padding grows the hit area, negative margin keeps the layout) */
   @media (max-width:640px){
-    .ann a,.brand,.link,footer a,nav.top .links a{display:inline-flex;align-items:center;min-height:44px;min-width:44px}
-    .cards .link{display:inline-flex;margin-top:8px}
+    .ann a{padding-block:11px;margin-block:-11px}
+    nav.top .brand{padding-block:9px;margin-block:-9px}
     .btn.sm{height:44px}
+    .pp{flex:0 0 44px;min-width:44px}
+    .link{padding-block:10px;margin-block:-10px}
+    .cards .link{margin-top:6px}
     .dots{gap:0}
-    .pp,.dots button.pp{flex:0 0 44px;min-width:44px;box-sizing:border-box}
-    .dots button:not(.pp),.dots button.on:not(.pp){position:relative;width:44px;height:44px;background:transparent}
-    .dots button:not(.pp)::before{content:"";position:absolute;top:50%;left:50%;width:8px;height:8px;border-radius:999px;background:#cfcfd5;transform:translate(-50%,-50%)}
-    .dots button.on:not(.pp)::before{width:26px;background:var(--fg)}
+    .dots button:not(.pp){box-sizing:content-box;padding:18px;background-clip:content-box}
+    footer .r{gap:10px;flex-wrap:wrap}
+    footer .r a{padding:12px 6px;margin:-12px -6px}
   }
+  @media (prefers-reduced-motion:reduce){.step.on .bar{animation:none;width:100%}.cursor::after{animation:none}}
 </style>
 </head>
 <body>
