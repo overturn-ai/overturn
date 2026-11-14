@@ -22,8 +22,24 @@ export function initSentry(): void {
         event.request.data = undefined;
         event.request.headers = undefined;
         event.request.cookies = undefined;
+        event.request.query_string = undefined;
       }
+      for (const ex of event.exception?.values ?? []) {
+        if (ex.value) ex.value = scrubErrorMessage(ex.value);
+      }
+      if (event.message) event.message = scrubErrorMessage(event.message);
       return event;
     },
   });
+}
+
+/**
+ * Database errors carry values: Drizzle appends the bound parameters to "Failed query", and
+ * Postgres names the offending row in "Key (email)=(a@b.co)". Those are customer content, so the
+ * statement shape goes to Sentry and the values do not.
+ */
+export function scrubErrorMessage(message: string): string {
+  return message
+    .replace(/\bparams:[\s\S]*$/i, "params: [redacted]")
+    .replace(/\)=\([^)]*\)/g, ")=([redacted])");
 }
