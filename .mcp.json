@@ -13,7 +13,10 @@
     },
     "firecrawl": {
       "command": "npx",
-      "args": ["-y", "firecrawl-mcp"],
+      "args": [
+        "-y",
+        "firecrawl-mcp"
+      ],
       "env": {
         "FIRECRAWL_API_KEY": "${FIRECRAWL_API_KEY:-}"
       }
@@ -56,23 +59,28 @@
     },
     "playwright": {
       "command": "npx",
-      "args": ["-y", "@playwright/mcp@latest", "--headless"]
+      "args": [
+        "-y",
+        "@playwright/mcp@latest",
+        "--headless"
+      ]
     },
     "chrome-devtools": {
       "command": "npx",
-      "args": ["-y", "chrome-devtools-mcp@latest"]
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@latest"
+      ]
     },
     "lightpanda": {
       "command": "${HOME}/.local/bin/lightpanda",
-      "args": ["mcp"]
+      "args": [
+        "mcp"
+      ]
     },
     "paper": {
       "type": "http",
       "url": "http://127.0.0.1:29979/mcp"
-    },
-    "headroom": {
-      "command": "headroom",
-      "args": ["mcp"]
     },
     "agentmail": {
       "type": "http",
@@ -80,14 +88,20 @@
     },
     "agentphone": {
       "command": "npx",
-      "args": ["-y", "agentphone-mcp"],
+      "args": [
+        "-y",
+        "agentphone-mcp"
+      ],
       "env": {
         "AGENTPHONE_API_KEY": "${AGENTPHONE_API_KEY:-}"
       }
     },
     "orgo": {
       "command": "npx",
-      "args": ["-y", "github:nickvasilescu/orgo-mcp"],
+      "args": [
+        "-y",
+        "github:nickvasilescu/orgo-mcp"
+      ],
       "env": {
         "ORGO_API_KEY": "${ORGO_API_KEY:-}",
         "ORGO_TOOLSETS": "core,screen,files,shell"
