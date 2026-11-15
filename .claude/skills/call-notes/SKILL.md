@@ -36,7 +36,7 @@ budget: ... · who decides: ... · timeline: ... · next step: ...
 Rules
 - Quotes are exact. Where the transcript is unclear write [unclear]. Never guess.
 - Everything above Signals is what they said. Your own read goes under Signals, one line each, marked (my read).
-- Who: a code only (DP-01 for a design partner, P-07 for a prospect). This repo is public: no person, company, product or number that identifies them goes in the file. The key from code to name lives outside the repo.
+- Who: a code only (DP-01 for a design partner, P-07 for a prospect). This repo is public: no person, company, product or number that identifies them goes in the file. The key from code to name lives outside the repo. Leave budget and spend figures out too: write has budget or no budget, never the amount.
 - Never commit the raw transcript, a recording link, an email address or a phone number.
 - Add one row to the table in `docs/wiki/calls/README.md`: date, who, stage, one-line takeaway.
 - If the call contradicts `docs/wiki/facts.md`, say so at the top of the PR description.

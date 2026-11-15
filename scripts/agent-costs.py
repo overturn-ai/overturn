@@ -36,10 +36,14 @@ for wf in WORKFLOWS:
                     rec = json.load(f)
             except ValueError:
                 continue
-        c = float(rec.get('cost_usd') or 0)
+        try:
+            c = float(rec.get('cost_usd') or 0)
+            t = int(rec.get('turns') or 0)
+        except (TypeError, ValueError, AttributeError):
+            continue
         cost += c
         recorded += 1
-        turns += int(rec.get('turns') or 0)
+        turns += t
         top.append((c, wf, run['url']))
     rows.append((wf, len(runs), recorded, cost, turns))
 
