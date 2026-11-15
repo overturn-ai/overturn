@@ -38,7 +38,8 @@ jobs:
       - run: |
           git config user.name "Shireen Kadhium"
           git config user.email "shireenkadhium1@gmail.com"
-      - uses: anthropics/claude-code-action@v1
+      - id: agent
+        uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -50,6 +51,30 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      - name: Record what this run cost
+        if: always()
+        env:
+          EXECUTION_FILE: ${{ steps.agent.outputs.execution_file }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          path = os.environ.get('EXECUTION_FILE') or ''
+          if path and os.path.exists(path):
+              data = json.load(open(path))
+              items = data if isinstance(data, list) else [data]
+              res = next((m for m in reversed(items) if isinstance(m, dict) and 'total_cost_usd' in m), {})
+              rec = {'workflow': os.environ.get('GITHUB_WORKFLOW'), 'run_id': os.environ.get('GITHUB_RUN_ID'), 'cost_usd': res.get('total_cost_usd') or 0, 'turns': res.get('num_turns') or 0, 'duration_ms': res.get('duration_ms') or 0}
+              json.dump(rec, open('/tmp/agent-cost.json', 'w'))
+              print('Agent cost this run: $%.2f over %s turns' % (float(rec['cost_usd']), rec['turns']), file=open(os.environ['GITHUB_STEP_SUMMARY'], 'a'))
+          PY
+      - name: Keep the cost record
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-cost
+          path: /tmp/agent-cost.json
+          if-no-files-found: ignore
+          retention-days: 30
       - name: No agent attribution in PR bodies
         if: always()
         env:

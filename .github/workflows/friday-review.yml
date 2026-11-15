@@ -1,0 +1,100 @@
+name: Friday review
+
+# Every Friday: what the agents cost this week, and the edits to skills and
+# CLAUDE.md that the week's logs and mistakes call for, as one PR to approve.
+on:
+  schedule:
+    - cron: '23 21 * * 5' # Fridays 21:23 UTC, early afternoon Pacific
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+concurrency:
+  group: friday-review
+  cancel-in-progress: false
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Add up what the agents cost this week
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 scripts/agent-costs.py > /tmp/agent-costs.md
+          cat /tmp/agent-costs.md >> "$GITHUB_STEP_SUMMARY"
+      - run: |
+          git config user.name "Shireen Kadhium"
+          git config user.email "shireenkadhium1@gmail.com"
+      - name: Propose the week's playbook edits
+        id: agent
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          claude_args: '--model claude-opus-5-5 --max-turns 80 --allowedTools "Bash,Read,Edit,MultiEdit,Write,Glob,Grep,WebFetch,WebSearch,Task,TodoWrite" --disallowedTools "Bash(git push --force:*),Bash(git push -f:*)"'
+          prompt: |
+            You are the Friday playbook review for this repo. Read CLAUDE.md first.
+
+            1. Read the entries from the last 7 days in docs/wiki/log/, docs/wiki/mistakes.md, any call notes added this week under docs/wiki/calls/, and /tmp/agent-costs.md.
+            2. Find what should change how agents work here: a mistake that happened twice, a learned line that no skill reflects yet, a step agents keep skipping, an instruction the week proved wrong, a job that cost money and produced nothing.
+            3. Fix each with the smallest edit to a line in .claude/skills/*/SKILL.md or CLAUDE.md. One reason per edit. Do not rewrite a skill. Do not edit docs/wiki/facts.md; propose changes to it in the PR text. Do not edit code, workflows, scripts or anything under apps/, packages/ or src/.
+            4. Write docs/wiki/playbooks/<date>.md, where <date> is the output of `date -u +%F`: first the contents of /tmp/agent-costs.md unchanged, then one line per edit (file, what changed, the log or mistake line that justifies it), then at most three questions for Shireen.
+            5. If nothing warrants an edit, write that file anyway with the cost table and one line saying so.
+            6. Branch chore/playbook-review-<date> from main. Commit as Shireen Kadhium <shireenkadhium1@gmail.com> with NO Co-Authored-By, Claude-Session or "Generated with" lines. Open a PR with `gh pr create`, title "Playbook review <date>", body = the playbooks file. Then start CI on the branch: `gh workflow run ci.yml --ref chore/playbook-review-<date>`.
+            Never merge, never force-push, never touch .env files. Twenty-minute budget.
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Record what this run cost
+        if: always()
+        env:
+          EXECUTION_FILE: ${{ steps.agent.outputs.execution_file }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          path = os.environ.get('EXECUTION_FILE') or ''
+          if path and os.path.exists(path):
+              data = json.load(open(path))
+              items = data if isinstance(data, list) else [data]
+              res = next((m for m in reversed(items) if isinstance(m, dict) and 'total_cost_usd' in m), {})
+              rec = {'workflow': os.environ.get('GITHUB_WORKFLOW'), 'run_id': os.environ.get('GITHUB_RUN_ID'), 'cost_usd': res.get('total_cost_usd') or 0, 'turns': res.get('num_turns') or 0, 'duration_ms': res.get('duration_ms') or 0}
+              json.dump(rec, open('/tmp/agent-cost.json', 'w'))
+              print('Agent cost this run: $%.2f over %s turns' % (float(rec['cost_usd']), rec['turns']), file=open(os.environ['GITHUB_STEP_SUMMARY'], 'a'))
+          PY
+      - name: Keep the cost record
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-cost
+          path: /tmp/agent-cost.json
+          if-no-files-found: ignore
+          retention-days: 30
+      - name: Text Shireen
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AGENT_NOTIFY_SECRET: ${{ secrets.AGENT_NOTIFY_SECRET }}
+        run: |
+          python3 - <<'PY'
+          import json, os, subprocess, urllib.request
+          from datetime import datetime, timezone
+          date = datetime.now(timezone.utc).strftime('%Y-%m-%d')
+          pr = subprocess.run(['gh', 'pr', 'list', '--head', 'chore/playbook-review-' + date, '--json', 'url', '--jq', '.[0].url'], capture_output=True, text=True).stdout.strip()
+          total = open('/tmp/agent-cost-total.txt').read().strip() if os.path.exists('/tmp/agent-cost-total.txt') else '?'
+          run = os.environ['GITHUB_SERVER_URL'] + '/' + os.environ['GITHUB_REPOSITORY'] + '/actions/runs/' + os.environ['GITHUB_RUN_ID']
+          text = 'Friday review, overturn: agents cost $' + total + ' this week. ' + ('Playbook diff to approve: ' + pr if pr else 'No playbook PR was opened. Run: ' + run)
+          secret = os.environ.get('AGENT_NOTIFY_SECRET')
+          if secret:
+              body = json.dumps({'text': text, 'product': 'overturn'}).encode()
+              req = urllib.request.Request('https://trytare.ai/api/agentphone/notify', data=body, headers={'Authorization': 'Bearer ' + secret, 'Content-Type': 'application/json'}, method='POST')
+              print(urllib.request.urlopen(req, timeout=20).status)
+          else:
+              print('AGENT_NOTIFY_SECRET is not set; nothing sent')
+          PY

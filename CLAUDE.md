@@ -44,5 +44,8 @@ Inbox: overturn@agentmail.to (AgentMail MCP) — research/ops email goes from he
 ## Memory
 `docs/wiki/` is the git-backed wiki (works with akitaonrails/ai-memory pointed at it): `mistakes.md`, `glossary.md`, `competitors.md`, `log/`, `funnel/`, `churn/`. Architecture decisions stay in `docs/decisions.md`. Append; don't rewrite history.
 
+## Facts, calls and the Friday review
+`docs/wiki/facts.md` lists the claims agents may make about Overturn in anything a person outside the company reads. Read it before writing outreach, replies, posts or site copy. If a claim is not there, leave it out. Calls go through the `call-notes` skill into `docs/wiki/calls/`. Every Friday `friday-review.yml` opens a PR with the week's cost per agent job and proposed edits to the skills; Shireen approves the diff.
+
 ## Taste
 `design-system` skill is law: dark/dense Raindrop-style app, light/editorial past.dev-style site. Writing: `writing-voice` skill. Humans get version 5, never the voice note.
