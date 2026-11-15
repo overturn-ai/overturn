@@ -88,9 +88,19 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash scripts/strip-pr-attribution.sh 240 || echo "strip failed (non-fatal)"
+
+  # Its own job on purpose: the secret it holds never shares a runner with the agent.
+  notify:
+    needs: loop
+    if: always() && needs.loop.result != 'skipped'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    steps:
       - name: Text Shireen about PRs this run opened
         if: always()
         env:
+          GH_REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NOTIFY_SECRET: ${{ secrets.AGENT_NOTIFY_SECRET }}
           PRODUCT: Overturn

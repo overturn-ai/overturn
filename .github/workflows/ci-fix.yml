@@ -25,6 +25,9 @@ jobs:
       (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'failure' && github.event.workflow_run.name != 'CI failure → fix PR') ||
       (github.event_name == 'deployment_status' && (github.event.deployment_status.state == 'failure' || github.event.deployment_status.state == 'error'))
     runs-on: ubuntu-latest
+    outputs:
+      what: ${{ steps.fail.outputs.what }}
+      needs_human: ${{ steps.human.outputs.text }}
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
@@ -93,9 +96,28 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash scripts/strip-pr-attribution.sh 240 || echo "strip failed (non-fatal)"
+      - name: Pass on what needs a person
+        id: human
+        if: always()
+        run: |
+          [ -f needs-human.txt ] || exit 0
+          echo "text=$(head -c 240 needs-human.txt | tr -c '[:alnum:][:space:].,:;/#()_-' ' ' | tr -s '[:space:]' ' ')" >> "$GITHUB_OUTPUT"
+
+  # Its own job on purpose: the secret it holds never shares a runner with the agent.
+  notify:
+    needs: fix
+    if: always() && needs.fix.result != 'skipped'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    steps:
       - name: Text Shireen
         if: always()
         env:
+          GH_REPO: ${{ github.repository }}
+          WHAT: ${{ needs.fix.outputs.what }}
+          NEEDS_HUMAN: ${{ needs.fix.outputs.needs_human }}
+          RUN_URL: ${{ github.event.workflow_run.html_url || github.event.deployment_status.target_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NOTIFY_SECRET: ${{ secrets.AGENT_NOTIFY_SECRET }}
           PRODUCT: Overturn
@@ -103,8 +125,8 @@ jobs:
           [ -n "$NOTIFY_SECRET" ] || { echo "AGENT_NOTIFY_SECRET unset; skipping text"; exit 0; }
           since=$(date -u -d "-30 minutes" +%Y-%m-%dT%H:%M:%SZ)
           prs=$(gh pr list --state open --label agent-fix --search "created:>=$since" --json number,title,isDraft --jq '.[] | "#\(.number)\(if .isDraft then " (draft)" else "" end) \(.title)"' | head -3 | tr '\n' ';' | sed 's/;$//')
-          if [ -n "$prs" ]; then text="$PRODUCT: ${{ steps.fail.outputs.what }} failed. Fix PR: $prs — ${{ github.server_url }}/${{ github.repository }}/pulls";
-          elif [ -f needs-human.txt ]; then text="$PRODUCT: ${{ steps.fail.outputs.what }} failed and needs you. $(head -c 240 needs-human.txt | tr '\n' ' ')";
-          else text="$PRODUCT: ${{ steps.fail.outputs.what }} failed; agent re-ran it or found nothing to fix. ${{ github.event.workflow_run.html_url || github.event.deployment_status.target_url }}"; fi
+          if [ -n "$prs" ]; then text="$PRODUCT: $WHAT failed. Fix PR: $prs — ${{ github.server_url }}/${{ github.repository }}/pulls";
+          elif [ -n "$NEEDS_HUMAN" ]; then text="$PRODUCT: $WHAT failed and needs you. $NEEDS_HUMAN";
+          else text="$PRODUCT: $WHAT failed; agent re-ran it or found nothing to fix. $RUN_URL"; fi
           curl -fsS -X POST https://trytare.ai/api/agentphone/notify -H "Authorization: Bearer $NOTIFY_SECRET" -H "Content-Type: application/json" \
             --data "$(jq -cn --arg t "$text" --arg p "$PRODUCT" '{text:$t, product:($p|ascii_downcase)}')" || echo "notify failed (non-fatal)"
