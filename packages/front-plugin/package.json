@@ -6,7 +6,7 @@
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {
-    "build": "tsup && node scripts/package.mjs && cd dist/plugin && zip -qr ../overturn-front-plugin.zip .",
+    "build": "tsup && node scripts/package.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },

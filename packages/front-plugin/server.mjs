@@ -1,6 +1,7 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { createReadStream, statSync } from "node:fs";
 import { createServer } from "node:http";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.dirname(fileURLToPath(import.meta.url));
@@ -43,6 +44,31 @@ createServer(async (request, response) => {
   }
 
   if (request.method === "POST" && url.pathname === "/capture") {
+    // The session cookie rides along on any POST to this host, including a
+    // cross-site form post (which can carry a text/plain body). Three checks
+    // keep that from becoming a CSRF channel: the Origin must be this host,
+    // the content type must be JSON, and the request must carry the custom
+    // header a cross-site form cannot set (and a cross-site fetch cannot set
+    // without a CORS preflight this server never answers).
+    const origin = request.headers.origin;
+    let originHost = null;
+    try {
+      originHost = origin ? new URL(origin).host : null;
+    } catch {
+      originHost = "invalid";
+    }
+    if (origin && originHost !== request.headers.host) {
+      response.writeHead(403).end("Cross-origin capture rejected");
+      return;
+    }
+    if (request.headers["x-overturn-capture"] !== "1") {
+      response.writeHead(403).end("Missing capture header");
+      return;
+    }
+    if (!/^application\/json\b/.test(request.headers["content-type"] ?? "")) {
+      response.writeHead(415).end("Expected application/json");
+      return;
+    }
     try {
       const chunks = [];
       let size = 0;
@@ -64,6 +90,7 @@ createServer(async (request, response) => {
         method: "POST",
         headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
         body,
+        signal: AbortSignal.timeout(10_000),
       });
       response.writeHead(upstream.status, { "Content-Type": "application/json" });
       response.end(await upstream.text());

@@ -3,10 +3,12 @@ import {
   buildCapturePayload,
   contextFrom,
   createDraftDetector,
+  type FrontComment,
   type FrontMessage,
   plainText,
   quickReasons,
   settingsFrom,
+  statusLine,
 } from "./capture";
 
 const draftText = "The adjuster will contact you within five business days about the roof claim.";
@@ -137,5 +139,159 @@ describe("draft and context", () => {
     expect(quickReasons(settingsFrom({ reasonPack: "claims" })).map((r) => r.code)).toContain(
       "wrong_coverage_decision",
     );
+  });
+});
+
+describe("settings contract", () => {
+  it("accepts the documented snake_case setting names", () => {
+    const parsed = settingsFrom({
+      reason_pack: "claims",
+      require_reason: "false",
+      min_draft_chars: 42,
+    });
+    expect(parsed.reasonPack).toBe("claims");
+    expect(parsed.requireReason).toBe(false);
+    expect(parsed.minDraftChars).toBe(42);
+  });
+
+  it("keeps the camelCase config.js spellings working as aliases", () => {
+    const parsed = settingsFrom({ reasonPack: "claims", requireReason: false, minDraftChars: 33 });
+    expect(parsed.reasonPack).toBe("claims");
+    expect(parsed.requireReason).toBe(false);
+    expect(parsed.minDraftChars).toBe(33);
+  });
+
+  it("defaults require_reason on and falls back on garbage", () => {
+    expect(settingsFrom({}).requireReason).toBe(true);
+    expect(settingsFrom({ reason_pack: "garbage" }).reasonPack).toBe("support");
+    expect(settingsFrom({ min_draft_chars: -1 }).minDraftChars).toBe(80);
+  });
+
+  it("ships exactly the eight claims codes from docs/capture.md", () => {
+    expect(quickReasons(settingsFrom({ reason_pack: "claims" })).map((r) => r.code)).toEqual([
+      "wrong_coverage_decision",
+      "missed_exclusion",
+      "reserve_too_low",
+      "reserve_too_high",
+      "wrong_amount_or_date",
+      "missing_required_step",
+      "tone_wording",
+      "policy_exception",
+    ]);
+  });
+
+  it("ships exactly the eight support codes", () => {
+    expect(quickReasons(settingsFrom({})).map((r) => r.code)).toEqual([
+      "wrong_answer",
+      "missing_information",
+      "wrong_amount_or_date",
+      "missing_required_step",
+      "against_policy",
+      "should_escalate",
+      "tone_wording",
+      "wrong_language_or_format",
+    ]);
+  });
+});
+
+describe("reason gate and send time", () => {
+  const changedSent = {
+    ...base.sent,
+    content: { body: "A completely different answer to the claim.", type: "text" as const },
+  };
+
+  it("a note alone does not satisfy require_reason; a code is required", () => {
+    expect(buildCapturePayload({ ...base, sent: changedSent, reason: "Storm claims are two-day." })).toEqual({
+      action: "need-reason",
+    });
+  });
+
+  it("freezes secondsToSend at the sent message's own timestamp", () => {
+    const decision = buildCapturePayload({
+      ...base,
+      sent: { ...base.sent, date: new Date(12_000).toISOString() },
+      now: 10_000_000,
+    });
+    expect(decision.action).toBe("capture");
+    if (decision.action !== "capture") return;
+    expect(decision.body.secondsToSend).toBe(2);
+  });
+});
+
+describe("status line wording", () => {
+  it("shows the verbatim inserted line when a draft arrives while watching", () => {
+    const detector = createDraftDetector(20);
+    detector.onComposer("dra_1", "", 0);
+    const found = detector.onComposer("dra_1", draftText, 100);
+    expect(found?.origin).toBe("inserted");
+    expect(statusLine(detector.current())).toBe("Draft inserted · 13 words");
+  });
+
+  it("keeps first-sight drafts as preloaded and manual marks as manual", () => {
+    const detector = createDraftDetector(20);
+    expect(detector.onComposer("dra_1", draftText, 1)?.origin).toBe("preloaded");
+    expect(statusLine(detector.current())).toBe("Draft found in the composer · 13 words");
+    expect(statusLine({ id: "dra_2", text: draftText, origin: "manual", at: 5 })).toBe(
+      "Draft marked by you · 13 words",
+    );
+    expect(statusLine(null)).toBe("Waiting for a draft");
+  });
+});
+
+describe("comments in context", () => {
+  const later: FrontMessage = {
+    id: "msg_3",
+    status: "inbound",
+    from: { handle: "dana@example.com" },
+    date: "2026-11-16T10:05:00Z",
+    content: { body: "The ceiling is still dripping.", type: "text" },
+  };
+  const comment: FrontComment = {
+    id: "cmt_1",
+    author: { name: "Ray", email: "ray@example.com" },
+    createdAt: "2026-11-16T10:02:00Z",
+    content: { body: "HO-3 policy, deductible $1,000." },
+  };
+
+  it("merges internal comments as notes, in time order", () => {
+    expect(contextFrom([thread[0]!, later], [comment])).toEqual([
+      {
+        role: "customer",
+        author: "dana@example.com",
+        content: "Water came through the roof.",
+        at: "2026-11-16T10:00:00.000Z",
+      },
+      {
+        role: "note",
+        author: "ray@example.com",
+        content: "HO-3 policy, deductible $1,000.",
+        at: "2026-11-16T10:02:00.000Z",
+      },
+      {
+        role: "customer",
+        author: "dana@example.com",
+        content: "The ceiling is still dripping.",
+        at: "2026-11-16T10:05:00.000Z",
+      },
+    ]);
+  });
+
+  it("carries comments into the payload and caps context at the latest 500", () => {
+    const decision = buildCapturePayload({ ...base, comments: [comment] });
+    expect(decision.action).toBe("capture");
+    if (decision.action !== "capture") return;
+    expect(decision.body.context.map((m) => m.role)).toEqual(["customer", "note"]);
+
+    const many: FrontMessage[] = Array.from({ length: 600 }, (_, i) => ({
+      id: `msg_x${i}`,
+      status: "inbound",
+      date: new Date(1_700_000_000_000 + i * 1000).toISOString(),
+      content: { body: `message ${i}`, type: "text" as const },
+    }));
+    const capped = buildCapturePayload({ ...base, context: many });
+    expect(capped.action).toBe("capture");
+    if (capped.action !== "capture") return;
+    expect(capped.body.context).toHaveLength(500);
+    expect(capped.body.context[0]?.content).toBe("message 100");
   });
 });
