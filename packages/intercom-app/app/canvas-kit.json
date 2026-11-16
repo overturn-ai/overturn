@@ -1,0 +1,16 @@
+{
+  "name": "Overturn",
+  "description": "Capture what Fin or a teammate drafted, what was sent, and why, as a replayable case.",
+  "canvas_kit": {
+    "for_teammates": {
+      "locations": ["conversation_details"],
+      "initialize_url": "https://YOUR_DEPLOYMENT/intercom/initialize",
+      "submit_url": "https://YOUR_DEPLOYMENT/intercom/submit"
+    }
+  },
+  "draft_inputs": {
+    "composer": "The unsent reply text, when the companion integration can supply it.",
+    "draft.origin": "draft:ai, draft:manual or draft:unknown. Omit it and Overturn records unknown.",
+    "assist": "true only when an assist (for example Fin) wrote the draft."
+  }
+}
