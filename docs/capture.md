@@ -23,6 +23,10 @@ Overturn failing never blocks the send. The run page links back to the ticket.
 
 Source: [`packages/zendesk-app`](https://github.com/overturn-ai/overturn/tree/main/packages/zendesk-app). Front, Salesforce Service Cloud and Gmail follow the same shape.
 
+## Gorgias
+
+Gorgias has no client-side app framework, so the Gorgias app is a small handler you deploy plus an HTTP integration and a ticket sidebar widget it creates once ([`packages/gorgias-app`](https://github.com/overturn-ai/overturn/tree/main/packages/gorgias-app)). The draft is the drafting AI's internal note on the ticket (or its recorded SDK run, `externalId: "gr:<ticket id>"`), the sent reply is the agent's next public message, and the customer's latest order rides along in `context`. Captures post with `source: "gorgias"`. The widget shows **Draft inserted · N words** and one button per reason code; `require_reason` holds the capture (never the send) until a reason is clicked.
+
 ## Any other tool: `POST /v1/capture`
 
 ```http
