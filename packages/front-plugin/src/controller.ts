@@ -269,9 +269,22 @@ export function createCaptureController(deps: {
   };
 
   /**
-   * Which new outbound message is the reply that consumed the draft? The
-   * earliest one not in the baseline, preferring the current teammate's own
-   * sends when several teammates replied, and preferring a loaded body.
+   * Which new outbound message is the reply that consumed the draft?
+   * Attribution follows one explicit rule, in order:
+   *
+   * 1. The current teammate's own sends come first: if any new outbound is
+   *    theirs, the earliest of those is the reply.
+   * 2. Shared inbox: if none of the new sends is the teammate's own, the
+   *    earliest new send counts as the reply only when it is the ONLY new
+   *    send — a lone reply sent under the inbox's or a teammate's address is
+   *    unambiguous, and an address mismatch alone never disqualifies it.
+   *    With several new sends and none of them the teammate's own,
+   *    attribution is genuinely ambiguous: pick nothing rather than silently
+   *    pinning the draft on a teammate's independent reply.
+   * 3. The picked message is locked in even if its body has not loaded yet:
+   *    it stays pending and is captured once its body arrives. A later
+   *    message is never substituted just because its body loaded first —
+   *    that would attribute the draft to the wrong send.
    */
   const pickSent = (state: ConversationState, messages: FrontMessage[]): FrontMessage | null => {
     const candidates = messages
@@ -285,8 +298,8 @@ export function createCaptureController(deps: {
     if (candidates.length === 0) return null;
     const actor = state.actor?.toLowerCase();
     const own = actor ? candidates.filter((message) => message.from?.handle?.toLowerCase() === actor) : [];
-    const pool = own.length > 0 ? own : candidates;
-    return pool.find((message) => messageText(message)) ?? pool[0] ?? null;
+    const pool = own.length > 0 ? own : candidates.length === 1 ? candidates : [];
+    return pool[0] ?? null;
   };
 
   const pollOnce = async (state: ConversationState): Promise<void> => {

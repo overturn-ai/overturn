@@ -349,3 +349,87 @@ describe("per-conversation state isolation", () => {
     expect(h.posts[0]!.externalId).toBe("fr:cnv_a");
   });
 });
+
+describe("sent attribution rules", () => {
+  const outbound = (h: Harness, id: string, handle: string, atMs: number, text?: string): FrontMessage => ({
+    id,
+    status: "outbound",
+    from: { handle },
+    date: h.at(atMs),
+    ...(text !== undefined ? { content: { body: text, type: "text" as const } } : {}),
+  });
+
+  function vanishDraft(h: Harness, ctx: FakeContext, fresh: FrontMessage[]): void {
+    ctx.conversation.draftId = undefined;
+    h.sdk.drafts.delete("dra_1");
+    ctx.messages = [...ctx.messages, ...fresh];
+    h.controller.onContext(ctx);
+  }
+
+  it("locks onto the earliest own send and waits for its body instead of capturing a later loaded send", async () => {
+    const h = harness();
+    const ctx = openConversation(h, "cnv_1");
+    await h.controller.poll();
+    await detectDraft(h, ctx);
+    // The reply that consumed the draft is the earliest new send; its body
+    // has not loaded yet. A later send whose body already loaded must never
+    // be substituted for it.
+    vanishDraft(h, ctx, [
+      outbound(h, "msg_2", "ray@example.com", 1_100_000),
+      outbound(h, "msg_3", "ray@example.com", 1_200_000, draftText),
+    ]);
+    await h.controller.poll();
+    expect(h.posts).toEqual([]);
+    expect(h.controller.inspect().pendingId).toBe("msg_2");
+
+    ctx.messages = ctx.messages.map((m) =>
+      m.id === "msg_2" ? { ...m, content: { body: draftText, type: "text" as const } } : m,
+    );
+    await h.controller.poll();
+    expect(h.posts).toHaveLength(1);
+    expect(h.posts[0]!.metadata).toMatchObject({ frontMessageId: "msg_2" });
+    expect(h.attempts()).toBe(1);
+  });
+
+  it("shared inbox rule: a lone new send under a different address is still captured — an address mismatch alone never rejects it", async () => {
+    const h = harness();
+    const ctx = openConversation(h, "cnv_1");
+    await h.controller.poll();
+    await detectDraft(h, ctx);
+    vanishDraft(h, ctx, [outbound(h, "msg_sam", "sam@example.com", 1_100_000, draftText)]);
+    await h.controller.poll();
+    expect(h.posts).toHaveLength(1);
+    expect(h.posts[0]!.metadata).toMatchObject({ frontMessageId: "msg_sam" });
+  });
+
+  it("shared inbox rule: several new sends with none of them the teammate's own are ambiguous — nothing is captured or held", async () => {
+    const h = harness();
+    const ctx = openConversation(h, "cnv_1");
+    await h.controller.poll();
+    await detectDraft(h, ctx);
+    vanishDraft(h, ctx, [
+      outbound(h, "msg_sam", "sam@example.com", 1_100_000, "Sam's own reply, not the draft."),
+      outbound(h, "msg_jo", "jo@example.com", 1_200_000, "Jo's own reply, not the draft."),
+    ]);
+    await h.controller.poll();
+    expect(h.posts).toEqual([]);
+    expect(h.controller.inspect().pendingId).toBeNull();
+    await h.controller.poll();
+    expect(h.posts).toEqual([]);
+    expect(h.controller.inspect().pendingId).toBeNull();
+  });
+
+  it("a teammate's still-loading reply does not block the draft author's own loaded send", async () => {
+    const h = harness();
+    const ctx = openConversation(h, "cnv_1");
+    await h.controller.poll();
+    await detectDraft(h, ctx);
+    vanishDraft(h, ctx, [
+      outbound(h, "msg_sam", "sam@example.com", 1_050_000),
+      outbound(h, "msg_ray", "ray@example.com", 1_100_000, draftText),
+    ]);
+    await h.controller.poll();
+    expect(h.posts).toHaveLength(1);
+    expect(h.posts[0]!.metadata).toMatchObject({ frontMessageId: "msg_ray" });
+  });
+});
