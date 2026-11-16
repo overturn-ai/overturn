@@ -23,6 +23,21 @@ Overturn failing never blocks the send. The run page links back to the ticket.
 
 Source: [`packages/zendesk-app`](https://github.com/overturn-ai/overturn/tree/main/packages/zendesk-app). Front, Salesforce Service Cloud and Gmail follow the same shape.
 
+## Front
+
+The Front plugin watches the selected conversation through the Front Plugin SDK. It reads the saved conversation draft with `fetchDraft`, watches `listMessages` for a new outbound message, and posts the draft/sent pair to the same capture endpoint.
+
+- `source` is `front`; `externalId` is `fr:<conversation id>`.
+- `draft` and `sent` use `{ text, fields? }`; this plugin currently captures text.
+- `context` contains prior conversation messages available to the Plugin SDK, oldest first; the sent reply is stored separately. Front may omit messages that have not loaded for the user.
+- Front exposes saved draft content but no reliable AI-versus-human origin marker, so the plugin records the draft origin as unverified.
+- `reason_pack` supports `claims` and `support`; `require_reason` queues a changed capture until the agent selects a reason code. The Front message has already been sent at that point.
+- A failed capture is caught and never affects the already-sent Front reply.
+
+**SDK limitations:** Front does not expose reliable metadata identifying an AI-generated draft, and the documented Plugin SDK does not provide a pre-send hook that can cancel the Send action. The sidebar plugin therefore cannot verify AI authorship or truly block the human's send when `require_reason` is enabled. A strict implementation needs a Front-supported interception surface and an agreed AI-draft marker/workflow.
+
+Source: [`packages/front-plugin`](https://github.com/overturn-ai/overturn/tree/main/packages/front-plugin).
+
 ## Any other tool: `POST /v1/capture`
 
 ```http
