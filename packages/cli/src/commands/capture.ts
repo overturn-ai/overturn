@@ -20,7 +20,7 @@ export function registerCapture(program: Command): void {
     .requiredOption("--draft <text>", "What the AI or junior produced (@file or - for stdin)")
     .requiredOption("--sent <text>", "What the expert actually sent (@file or - for stdin)")
     .option("--agent <name>", "Workflow, one suite per agent", "reply")
-    .option("--source <name>", "zendesk | front | intercom | gmail | salesforce | custom", "custom")
+    .option("--source <name>", "zendesk | gorgias | front | intercom | gmail | salesforce | custom", "custom")
     .option("--reason <text>", "One line on why it changed")
     .option(
       "--reason-code <code>",
