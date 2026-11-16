@@ -1,0 +1,1 @@
+export { buildGorgiasCapturePayload } from './capture';
