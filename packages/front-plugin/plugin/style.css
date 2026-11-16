@@ -1,0 +1,11 @@
+:root { font: 14px/1.45 system-ui, sans-serif; color: #e6e8ef; background: #181b23; }
+body { margin: 0; }
+main { padding: 16px; }
+h1 { margin: 0 0 12px; font-size: 15px; }
+.status { margin-bottom: 12px; font-weight: 600; }
+.hint, .note { color: #a9afbd; font-size: 12px; }
+.quick { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+button { color: inherit; background: #272d3a; border: 1px solid #495164; border-radius: 6px; padding: 6px 9px; cursor: pointer; }
+button.on { background: #315b75; border-color: #6eb9e4; }
+textarea { box-sizing: border-box; width: 100%; min-height: 56px; padding: 8px; border: 1px solid #495164; border-radius: 6px; color: inherit; background: #222733; resize: vertical; }
+.link { padding-left: 0; border: 0; background: none; color: #85c9f4; }
