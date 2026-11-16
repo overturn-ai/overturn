@@ -21,7 +21,18 @@ What the agent sees:
 
 Overturn failing never blocks the send. The run page links back to the ticket.
 
-Source: [`packages/zendesk-app`](https://github.com/overturn-ai/overturn/tree/main/packages/zendesk-app). Front, Salesforce Service Cloud and Gmail follow the same shape.
+Source: [`packages/zendesk-app`](https://github.com/overturn-ai/overturn/tree/main/packages/zendesk-app). Salesforce Service Cloud and Gmail follow the same shape.
+
+## Front
+
+The Overturn plugin sits in the Front conversation sidebar. Download `overturn-front-plugin.zip` from the [latest release](https://github.com/overturn-ai/overturn/releases), host the folder and add it as a Front plugin; the first time it opens it asks for a project API key, an optional `agent` (default `support-reply`), `reason_pack` (`support` or `claims`), `require_reason` and `overturn_base_url`.
+
+- **Draft inserted · 112 words** once an AI draft lands in the reply box. Nothing but the reply box is read until a draft appears; the conversation is loaded only then.
+- The reason picker and optional note are the same as in Zendesk.
+- When the reply goes out, `POST /v1/capture` is sent with `source: "front"`, `externalId: "fr:<conversation id>"`, the thread as `context` and `draft` / `sent` as `{ text }`.
+- Front gives plugins no pre-send hook, so `require_reason` holds a changed reply's capture until a reason is picked rather than blocking Front's send. A failed capture logs and gets out of the way.
+
+Source: [`packages/front-plugin`](https://github.com/overturn-ai/overturn/tree/main/packages/front-plugin).
 
 ## Any other tool: `POST /v1/capture`
 

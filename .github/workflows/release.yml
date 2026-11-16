@@ -89,11 +89,11 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      # the Zendesk app is uploaded by admins, not installed from a registry: it ships as a release asset
-      - run: pnpm --filter @overturn-ai/shared build && pnpm --filter @overturn-ai/zendesk-app build
+      # the Zendesk app and the Front plugin are installed by admins, not from a registry: they ship as release assets
+      - run: pnpm --filter @overturn-ai/shared build && pnpm --filter @overturn-ai/zendesk-app build && pnpm --filter @overturn-ai/front-plugin build
       - run: |
           git tag "v$V" && git push origin "v$V"
-          gh release create "v$V" --generate-notes --title "v$V" packages/zendesk-app/dist/overturn-zendesk-app.zip packages/zendesk-app/dist/overturn-zendesk-app-marketplace.zip
+          gh release create "v$V" --generate-notes --title "v$V" packages/zendesk-app/dist/overturn-zendesk-app.zip packages/zendesk-app/dist/overturn-zendesk-app-marketplace.zip packages/front-plugin/dist/overturn-front-plugin.zip
         env:
           V: ${{ needs.version.outputs.version }}
           GH_TOKEN: ${{ github.token }}
