@@ -1,0 +1,36 @@
+{
+  "name": "Overturn for Intercom",
+  "description": "Captures AI-drafted replies, what the agent sent, and why, as replayable QA cases.",
+  "version": "0.1.6",
+  "surface": "inbox",
+  "canvas_kit": {
+    "initialize_url": "/intercom/initialize",
+    "submit_url": "/intercom/submit"
+  },
+  "settings": {
+    "overturn_base_url": {
+      "type": "text",
+      "default": "https://api.overturn.run"
+    },
+    "agent": {
+      "type": "text",
+      "default": "support-reply"
+    },
+    "reason_pack": {
+      "type": "text",
+      "default": "support"
+    },
+    "require_reason": {
+      "type": "boolean",
+      "default": true
+    },
+    "capture_internal_notes": {
+      "type": "boolean",
+      "default": false
+    },
+    "min_draft_chars": {
+      "type": "number",
+      "default": 80
+    }
+  }
+}
