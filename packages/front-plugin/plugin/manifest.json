@@ -1,0 +1,74 @@
+{
+  "name": "Overturn",
+  "version": "0.1.6",
+  "description": "Overturn for Front: captures what the AI drafted, what the teammate sent, and why, as a replayable case",
+  "author": {
+    "name": "Overturn",
+    "email": "shireen@overturn.run",
+    "url": "https://overturn.run"
+  },
+  "placements": ["sidebar", "composer"],
+  "entrypoint": "index.html",
+  "settings": [
+    {
+      "name": "overturn_api_key",
+      "type": "string",
+      "required": true,
+      "description": "Project API key from Overturn (Settings → API keys)."
+    },
+    {
+      "name": "overturn_base_url",
+      "type": "string",
+      "required": false,
+      "default": "https://api.overturn.run",
+      "description": "Overturn API URL when self-hosting."
+    },
+    {
+      "name": "agent",
+      "type": "string",
+      "required": false,
+      "default": "support-reply",
+      "description": "The workflow name. One regression suite per workflow."
+    },
+    {
+      "name": "reason_pack",
+      "type": "string",
+      "required": false,
+      "default": "support",
+      "description": "Quick-pick reasons: 'support' or 'claims'."
+    },
+    {
+      "name": "require_reason",
+      "type": "boolean",
+      "required": false,
+      "default": true,
+      "description": "Block changed replies until a reason is picked."
+    },
+    {
+      "name": "capture_internal_notes",
+      "type": "boolean",
+      "required": false,
+      "default": false,
+      "description": "Also capture internal notes/comments."
+    },
+    {
+      "name": "decision_fields",
+      "type": "string",
+      "required": false,
+      "description": "Custom fields that are the decision, as id:label pairs."
+    },
+    {
+      "name": "scope_tag",
+      "type": "string",
+      "required": false,
+      "description": "Optional tag to restrict watched conversations."
+    },
+    {
+      "name": "min_draft_chars",
+      "type": "number",
+      "required": false,
+      "default": 80,
+      "description": "Minimum characters to count as draft."
+    }
+  ]
+}
