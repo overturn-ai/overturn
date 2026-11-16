@@ -1,0 +1,105 @@
+{
+  "name": "Overturn",
+  "context": "ticket",
+  "type": "http",
+  "order": 3,
+  "integration_id": 0,
+  "template": {
+    "type": "wrapper",
+    "widgets": [
+      {
+        "type": "card",
+        "title": "Overturn",
+        "path": "",
+        "meta": {
+          "displayCard": true,
+          "link": "{{app_url}}"
+        },
+        "widgets": [
+          {
+            "type": "text",
+            "title": "Status",
+            "path": "status"
+          },
+          {
+            "type": "text",
+            "title": "Detail",
+            "path": "detail"
+          },
+          {
+            "type": "text",
+            "title": "Put the draft text in Overturn",
+            "path": "draft_action",
+            "meta": {
+              "link": "{{draft_url}}"
+            }
+          },
+          {
+            "type": "text",
+            "title": "Wrong answer",
+            "path": "reason_wrong_answer",
+            "meta": {
+              "link": "{{reason_wrong_answer_url}}"
+            }
+          },
+          {
+            "type": "text",
+            "title": "Missing information",
+            "path": "reason_missing_information",
+            "meta": {
+              "link": "{{reason_missing_information_url}}"
+            }
+          },
+          {
+            "type": "text",
+            "title": "Wrong amount or date",
+            "path": "reason_wrong_amount_or_date",
+            "meta": {
+              "link": "{{reason_wrong_amount_or_date_url}}"
+            }
+          },
+          {
+            "type": "text",
+            "title": "Missing required step",
+            "path": "reason_missing_required_step",
+            "meta": {
+              "link": "{{reason_missing_required_step_url}}"
+            }
+          },
+          {
+            "type": "text",
+            "title": "Against policy",
+            "path": "reason_against_policy",
+            "meta": {
+              "link": "{{reason_against_policy_url}}"
+            }
+          },
+          {
+            "type": "text",
+            "title": "Should have escalated",
+            "path": "reason_should_escalate",
+            "meta": {
+              "link": "{{reason_should_escalate_url}}"
+            }
+          },
+          {
+            "type": "text",
+            "title": "Tone / wording",
+            "path": "reason_tone_wording",
+            "meta": {
+              "link": "{{reason_tone_wording_url}}"
+            }
+          },
+          {
+            "type": "text",
+            "title": "Wrong language / format",
+            "path": "reason_wrong_language_or_format",
+            "meta": {
+              "link": "{{reason_wrong_language_or_format_url}}"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

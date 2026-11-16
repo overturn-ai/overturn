@@ -1,0 +1,19 @@
+{
+  "name": "Overturn",
+  "description": "Files what the AI drafted, what the agent sent and why, as a replayable case.",
+  "type": "http",
+  "http": {
+    "url": "https://app.overturn.run/gorgias/widget?ticket_id={{ticket.id}}",
+    "method": "GET",
+    "headers": {
+      "Accept": "application/json"
+    },
+    "triggers": {
+      "ticket-created": true,
+      "ticket-updated": true,
+      "ticket-message-created": true
+    },
+    "request_content_type": "application/json",
+    "response_content_type": "application/json"
+  }
+}

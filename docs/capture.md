@@ -21,7 +21,17 @@ What the agent sees:
 
 Overturn failing never blocks the send. The run page links back to the ticket.
 
-Source: [`packages/zendesk-app`](https://github.com/overturn-ai/overturn/tree/main/packages/zendesk-app). Front, Salesforce Service Cloud and Gmail follow the same shape.
+Source: [`packages/zendesk-app`](https://github.com/overturn-ai/overturn/tree/main/packages/zendesk-app). Front, Salesforce Service Cloud and Gmail follow the same shape. Gorgias cannot — there is no sidebar iframe to run the panel in — so it gets the shape below.
+
+## Gorgias (ticket sidebar widget)
+
+A Gorgias app is an HTTP integration plus a declarative sidebar widget, and the REST API has no endpoint for the unsent reply box. `packages/gorgias-app` serves one URL that Gorgias calls on `ticket-created`, `ticket-updated` and `ticket-message-created`, and the card in the ticket sidebar renders what it answers.
+
+1. Deploy the app (`node dist/main.js`) with the helpdesk's REST credentials, a project API key and a `WIDGET_TOKEN` (it refuses to start without one); state lives in `DATA_FILE` so a restart does not lose a draft or a capture waiting for its reason.
+2. `node packages/gorgias-app/scripts/install.mjs` creates the integration and the widget; the payloads it posts are in `packages/gorgias-app/app`.
+3. The agent sees **Draft inserted · 112 words** as soon as the drafting agent's run is found for the ticket (`externalId: "gr:<ticket id>"`), or **Draft marked by you** once the AI's text is pasted into the Overturn page. The `support` codes are one-click rows, with an optional note on the page a row opens.
+
+Gorgias decouples creating a message from sending it, so the capture waits for `sent_datetime`: a message the customer never received is not a correction. Once it is there the app diffs draft against sent and files it — sent as drafted is an approve, changed is an edit (`source: "gorgias"`). The decision fields are frozen when the draft appears, so a field the agent changes while the AI's text sits in the reply box stays visible in the diff. Order context from the ticket's custom fields travels in `metadata.order` and in the thread the replay sees. `require_reason` holds a changed capture until a reason is picked, and never holds the agent's send: Gorgias gives an app no submit hook to block.
 
 ## Any other tool: `POST /v1/capture`
 
