@@ -23,6 +23,23 @@ Overturn failing never blocks the send. The run page links back to the ticket.
 
 Source: [`packages/zendesk-app`](https://github.com/overturn-ai/overturn/tree/main/packages/zendesk-app). Front, Salesforce Service Cloud and Gmail follow the same shape.
 
+## Gorgias (no code)
+
+The Overturn app sits in the Gorgias ticket sidebar widget:
+
+1. Create a project API key in Overturn (Settings → API keys).
+2. Download `overturn-gorgias-app.zip` from releases or build via `pnpm --filter @overturn-ai/gorgias-app build`.
+3. In Gorgias Settings → Apps & Integrations, configure the Overturn widget.
+4. Settings: `overturn_api_key`, `reason_pack` (default `support`), `agent` (default `support-reply`), `order_fields`, and `require_reason`.
+
+What the agent sees:
+- **Draft inserted · N words** when an AI assist, macro or paste lands in the composer.
+- An order context badge displaying active order data (`order_number`, fulfillment status, etc.).
+- Quick-pick reasons from the support reason pack with optional note.
+- On send: `POST /v1/capture` with `source: "gorgias"`, `externalId: "gr:<ticket id>"`, ticket thread as context, and draft/sent payloads. Never blocks the send.
+
+Source: [`packages/gorgias-app`](https://github.com/overturn-ai/overturn/tree/main/packages/gorgias-app).
+
 ## Any other tool: `POST /v1/capture`
 
 ```http
