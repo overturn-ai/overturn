@@ -1,0 +1,20 @@
+{
+  "name": "Overturn",
+  "surface": "inbox",
+  "canvas_kit": {
+    "initialize_url": "https://<your-host>/initialize",
+    "submit_url": "https://<your-host>/submit",
+    "configure_url": "https://<your-host>/configure"
+  },
+  "environment": [
+    "INTERCOM_CLIENT_SECRET",
+    "INTERCOM_ACCESS_TOKEN",
+    "OVERTURN_API_KEY",
+    "OVERTURN_BASE_URL",
+    "AGENT",
+    "REASON_PACK",
+    "REQUIRE_REASON",
+    "CAPTURE_INTERNAL_NOTES",
+    "PORT"
+  ]
+}

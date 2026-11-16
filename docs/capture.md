@@ -23,6 +23,14 @@ Overturn failing never blocks the send. The run page links back to the ticket.
 
 Source: [`packages/zendesk-app`](https://github.com/overturn-ai/overturn/tree/main/packages/zendesk-app). Front, Salesforce Service Cloud and Gmail follow the same shape.
 
+## Intercom
+
+The Overturn app is an Intercom Canvas Kit app on the inbox surface ([`packages/intercom-app`](https://github.com/overturn-ai/overturn/tree/main/packages/intercom-app)). Canvas Kit has no composer or send hook, so the panel works from a draft (a run your agent recorded with `externalId: "ic:<conversation id>"`, or text pasted into the panel) and the latest reply the agent sent; it can hold back the capture, never the send.
+
+- **Draft inserted · 112 words** once there is a draft, a reason picker (`reason_pack`, `support` by default) and an optional note.
+- Captures go to `POST /v1/capture` with `source: "intercom"` and `externalId: "ic:<conversation id>"`. `require_reason` refuses a changed capture until a reason is picked.
+- Origin is never guessed: a recorded run or "Written by an AI assist" is tagged `draft:ai`, "I wrote it" is `draft:manual`, and anything else carries no `draft:*` tag and counts as unknown on the scorecard.
+
 ## Any other tool: `POST /v1/capture`
 
 ```http
