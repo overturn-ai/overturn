@@ -21,7 +21,7 @@ What the agent sees:
 
 Overturn failing never blocks the send. The run page links back to the ticket.
 
-Source: [`packages/zendesk-app`](https://github.com/overturn-ai/overturn/tree/main/packages/zendesk-app). Front, Salesforce Service Cloud and Gmail follow the same shape.
+Source: [`packages/zendesk-app`](https://github.com/overturn-ai/overturn/tree/main/packages/zendesk-app). Gorgias ships as [`packages/gorgias-app`](https://github.com/overturn-ai/overturn/tree/main/packages/gorgias-app) (ticket sidebar: the draft is the run a drafting agent recorded with the SDK for `externalId: "gr:<ticket id>"`, the sent body is the newest agent message newer than the draft, since the Gorgias REST API has no composer endpoint). Front, Salesforce Service Cloud and Gmail follow the same shape.
 
 ## Any other tool: `POST /v1/capture`
 

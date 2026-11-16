@@ -1,0 +1,30 @@
+{
+  "type": "wrapper",
+  "widgets": [
+    {
+      "type": "card",
+      "title": "Overturn",
+      "path": "",
+      "meta": { "displayCard": true },
+      "widgets": [
+        { "type": "text", "title": "Status", "path": "status" },
+        { "type": "text", "title": "Order", "path": "order" },
+        { "type": "text", "title": "Note", "path": "note" },
+        {
+          "type": "list",
+          "title": "Why did you change it?",
+          "path": "reasons",
+          "widgets": [
+            {
+              "type": "card",
+              "title": "{{label}}",
+              "path": "",
+              "meta": { "displayCard": true, "link": "{{link}}" },
+              "widgets": [{ "type": "text", "title": "Why", "path": "hint" }]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
