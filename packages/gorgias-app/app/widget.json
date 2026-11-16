@@ -1,0 +1,20 @@
+{
+  "context": "ticket",
+  "integration_id": "REPLACE_WITH_INTEGRATION_ID",
+  "template": {
+    "type": "wrapper",
+    "widgets": [
+      {
+        "meta": { "displayCard": true },
+        "path": "",
+        "title": "Overturn",
+        "type": "card",
+        "widgets": [
+          { "path": "status", "title": "Status", "type": "text" },
+          { "path": "draft_words", "title": "Draft words", "type": "text" }
+        ]
+      }
+    ]
+  },
+  "type": "http"
+}

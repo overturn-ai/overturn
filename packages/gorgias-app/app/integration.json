@@ -1,0 +1,13 @@
+{
+  "description": "Capture for Gorgias: the ticket sidebar shows the AI draft state, and agent sends are recorded as captures.",
+  "http": {
+    "headers": { "Authorization": "Bearer REPLACE_WITH_YOUR_OVERTURN_API_KEY" },
+    "method": "GET",
+    "request_content_type": "application/json",
+    "response_content_type": "application/json",
+    "triggers": { "ticket-created": true, "ticket-message-created": true, "ticket-updated": true },
+    "url": "https://YOUR-OVERTURN-APP-HOST/integrations/gorgias?ticket_id={{ticket.id}}&customer_email={{ticket.customer.email}}"
+  },
+  "name": "Overturn",
+  "type": "http"
+}
