@@ -21,7 +21,17 @@ What the agent sees:
 
 Overturn failing never blocks the send. The run page links back to the ticket.
 
-Source: [`packages/zendesk-app`](https://github.com/overturn-ai/overturn/tree/main/packages/zendesk-app). Front, Salesforce Service Cloud and Gmail follow the same shape.
+Source: [`packages/zendesk-app`](https://github.com/overturn-ai/overturn/tree/main/packages/zendesk-app). Front, Salesforce Service Cloud and Gmail follow the same shape. Gorgias cannot — there is no sidebar iframe to run the panel in — so it gets the shape below.
+
+## Gorgias (ticket sidebar widget)
+
+A Gorgias app is an HTTP integration plus a declarative sidebar widget, and the REST API has no endpoint for the unsent reply box. `packages/gorgias-app` serves one URL that Gorgias calls on `ticket-created`, `ticket-updated` and `ticket-message-created`, and the card in the ticket sidebar renders what it answers.
+
+1. Deploy the app (`node dist/main.js`) with the helpdesk's REST credentials and a project API key.
+2. `node packages/gorgias-app/scripts/install.mjs` creates the integration and the widget; the payloads it posts are in `packages/gorgias-app/app`.
+3. The agent sees **Draft inserted · 112 words** as soon as the drafting agent's run is found for the ticket (`externalId: "gr:<ticket id>"`), or **Draft marked by you** once the AI's text is pasted into the Overturn page. The `support` codes are one-click rows, with an optional note on the page a row opens.
+
+When the reply lands in the thread the app diffs draft against sent and files it: sent as drafted is an approve, changed is an edit (`source: "gorgias"`). Order context from the ticket's custom fields travels in `metadata.order` and in the thread the replay sees. `require_reason` holds a changed capture until a reason is picked, and never holds the agent's send: Gorgias gives an app no submit hook to block.
 
 ## Any other tool: `POST /v1/capture`
 
