@@ -62,6 +62,8 @@ export interface DemoResult {
   runId: string;
   caseId: string | null;
   amountCents: number;
+  attributedCents: CaptureStats["cost"]["attributedCents"];
+  pendingCents: CaptureStats["cost"]["pendingCents"];
   lostByModel: CaptureStats["cost"]["byModel"];
 }
 

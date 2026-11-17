@@ -59,9 +59,10 @@ describe("seeding a fresh project", () => {
     expect(stats.byAgent.map((a) => a.agent).sort()).toEqual(["claims-reply", "coverage-decision"]);
     expect(stats.timeToSend.timed).toBe(18);
     expect(stats.byReason.map((r) => r.reason).sort()).toEqual(CLAIMS_REASON_CODES.map((r) => r.code).sort());
-    expect(stats.byReason.filter((r) => r.excluded).map((r) => r.reason)).toEqual([
-      ...SUITE_EXCLUDED_REASON_CODES,
-    ]);
+    // Only the excluded codes a claims project can produce: the commerce ones never appear here.
+    expect(stats.byReason.filter((r) => r.excluded).map((r) => r.reason)).toEqual(
+      SUITE_EXCLUDED_REASON_CODES.filter((code) => CLAIMS_REASON_CODES.some((r) => r.code === code)),
+    );
     // Credit stays off by default: the demo must not teach a per-person view.
     expect(stats.byExpert).toEqual([]);
   });
