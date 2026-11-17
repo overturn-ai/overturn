@@ -1,0 +1,22 @@
+{
+  "dependencies": {
+    "@overturn-ai/shared": "workspace:*"
+  },
+  "description": "Overturn for Gorgias: captures what the AI drafted, what the agent sent, and why, as a replayable case",
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.7"
+  },
+  "license": "Apache-2.0",
+  "name": "@overturn-ai/gorgias-app",
+  "private": true,
+  "scripts": {
+    "build": "tsup && node scripts/package.mjs",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "type": "module",
+  "version": "0.1.0"
+}
