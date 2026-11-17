@@ -13,7 +13,7 @@ import type { Db } from "../db/client";
 import { DB } from "../db/db.module";
 import { type ProjectRow, projects } from "../db/schema";
 import { NotifyService } from "../notify/notify.service";
-import { parseSettings } from "./settings";
+import { encryptSettings, parseSettings } from "./settings";
 
 export function serializeProject(p: ProjectRow): Project {
   return {
@@ -66,7 +66,7 @@ export class ProjectsController {
     });
     const [updated] = await this.db
       .update(projects)
-      .set({ name: body.name ?? p.name, settings })
+      .set({ name: body.name ?? p.name, settings: encryptSettings(settings) })
       .where(eq(projects.id, p.id))
       .returning();
     return serializeProject(updated!);
