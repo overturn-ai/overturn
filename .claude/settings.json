@@ -10,10 +10,30 @@
     "GIT_COMMITTER_EMAIL": "shireenkadhium1@gmail.com"
   },
   "extraKnownMarketplaces": {
-    "claude-code-plugins": { "source": { "source": "github", "repo": "anthropics/claude-code" } },
-    "wshobson": { "source": { "source": "github", "repo": "wshobson/agents" } },
-    "paper": { "source": { "source": "github", "repo": "paper-design/agent-plugins" } },
-    "mattpocock": { "source": { "source": "github", "repo": "mattpocock/skills" } }
+    "claude-code-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/claude-code"
+      }
+    },
+    "wshobson": {
+      "source": {
+        "source": "github",
+        "repo": "wshobson/agents"
+      }
+    },
+    "paper": {
+      "source": {
+        "source": "github",
+        "repo": "paper-design/agent-plugins"
+      }
+    },
+    "mattpocock": {
+      "source": {
+        "source": "github",
+        "repo": "mattpocock/skills"
+      }
+    }
   },
   "enabledPlugins": {
     "typescript-lsp@claude-plugins-official": true,
@@ -22,26 +42,88 @@
   },
   "permissions": {
     "allow": [
-      "Bash(pnpm *)", "Bash(npx tsc *)", "Bash(npx vitest *)", "Bash(npx playwright *)", "Bash(npx biome *)",
-      "Bash(git status*)", "Bash(git diff*)", "Bash(git log*)", "Bash(git add *)", "Bash(git commit *)", "Bash(git checkout -b *)", "Bash(git switch *)", "Bash(git push -u origin *)", "Bash(git worktree *)",
-      "Bash(gh pr *)", "Bash(gh issue *)", "Bash(gh run *)",
-      "Bash(headroom *)", "Bash(lightpanda *)"
+      "Bash(pnpm *)",
+      "Bash(npx tsc *)",
+      "Bash(npx vitest *)",
+      "Bash(npx playwright *)",
+      "Bash(npx biome *)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git checkout -b *)",
+      "Bash(git switch *)",
+      "Bash(git push -u origin *)",
+      "Bash(git worktree *)",
+      "Bash(gh pr *)",
+      "Bash(gh issue *)",
+      "Bash(gh run *)",
+      "Bash(headroom *)",
+      "Bash(lightpanda *)"
     ],
     "deny": [
-      "Read(./.env)", "Read(./.env.*)", "Read(./apps/web/.env)", "Read(./apps/web/.env.*)", "Read(./apps/api/.env)",
-      "Bash(git push --force*)", "Bash(git push -f*)", "Bash(git reset --hard*)", "Bash(rm -rf *)",
-      "Bash(curl * | sh)", "Bash(curl * | bash)"
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./apps/web/.env)",
+      "Read(./apps/web/.env.*)",
+      "Read(./apps/api/.env)",
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(git reset --hard*)",
+      "Bash(rm -rf *)",
+      "Bash(curl * | sh)",
+      "Bash(curl * | bash)",
+      "Bash(git push * --force*)",
+      "Bash(git push * -f *)",
+      "Bash(gh pr merge*)"
     ]
   },
   "hooks": {
     "PreToolUse": [
-      { "matcher": "Edit|Write|MultiEdit", "hooks": [ { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/security-check.sh", "timeout": 10 } ] }
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/git-guard.sh",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/security-check.sh",
+            "timeout": 10
+          }
+        ]
+      }
     ],
     "PostToolUse": [
-      { "matcher": "Edit|Write|MultiEdit", "hooks": [ { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/post-edit-check.sh", "timeout": 120 } ] }
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/post-edit-check.sh",
+            "timeout": 120
+          }
+        ]
+      }
     ],
     "Stop": [
-      { "hooks": [ { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/nightly-log.sh", "timeout": 10 } ] }
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/nightly-log.sh",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   }
 }
