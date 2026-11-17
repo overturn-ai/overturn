@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Overturn Capture for Gorgias",
+  "version": "0.1.0",
+  "description": "Capture AI drafts and reviewed replies in the Gorgias ticket sidebar",
+  "permissions": ["storage"],
+  "host_permissions": ["https://api.overturn.run/*"],
+  "background": { "service_worker": "background.global.js" },
+  "options_page": "options.html",
+  "content_scripts": [{
+    "matches": ["https://*.gorgias.com/*"],
+    "js": ["main.global.js"],
+    "css": ["style.css"]
+  }]
+}

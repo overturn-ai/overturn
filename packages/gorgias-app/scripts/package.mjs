@@ -1,0 +1,14 @@
+import { cpSync, mkdirSync, rmSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+const out = path.join(root, "dist", "app");
+rmSync(out, { recursive: true, force: true });
+mkdirSync(out, { recursive: true });
+cpSync(path.join(root, "app"), out, { recursive: true });
+for (const name of ["main", "background", "options"]) cpSync(path.join(root, "dist", `${name}.global.js`), path.join(out, `${name}.global.js`));
+const zip = path.join(root, "dist", "overturn-gorgias-app.zip");
+rmSync(zip, { force: true });
+execFileSync("zip", ["-qr", zip, "."], { cwd: out });
+console.log("dist/overturn-gorgias-app.zip");
