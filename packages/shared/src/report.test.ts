@@ -34,6 +34,7 @@ function report(over: Partial<ReplayReport>): ReplayReport {
       id: ID,
       projectId: ID,
       targetModel: "together/deepseek-ai/DeepSeek-V4.1-Flash",
+      ci: null,
       targetPromptVersion: null,
       options: { examples: 0 },
       groupId: null,

@@ -320,6 +320,8 @@ export const replayJobs = pgTable(
     groupId: uuid("group_id"),
     /** Audit: the user email or API key that started the replay; null for jobs from before this existed. */
     startedBy: text("started_by"),
+    /** Where it ran, when it ran in CI: { provider, repo, event, baseRef, defaultBranch, runUrl }. */
+    ci: jsonb("ci").$type<Record<string, unknown> | null>(),
     mode: replayMode("mode").notNull().default("step"),
     caseFilter: jsonb("case_filter").notNull().default(sql`'{}'::jsonb`),
     /** Replay options beyond model/prompt: { examples: k } puts k nearest corrections in the prompt. */

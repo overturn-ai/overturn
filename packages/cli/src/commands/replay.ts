@@ -8,6 +8,7 @@ import {
 } from "@overturn-ai/shared";
 import type { Command } from "commander";
 import pc from "picocolors";
+import { ciContext } from "../ci.js";
 import {
   ago,
   apiFor,
@@ -221,6 +222,7 @@ export function registerReplay(program: Command): void {
         maxCostUsd,
         promptVersion: opts.prompt ?? null,
         ...(opts.examples ? { examples: Number(opts.examples) } : {}),
+        ci: ciContext() ?? null,
       });
       if (created.jobs.length > 1) {
         if (!opts.wait) {

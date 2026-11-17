@@ -837,7 +837,26 @@ export type ReplayStatus = z.infer<typeof replayStatusSchema>;
 
 const modelIdSchema = z.string().regex(/^[a-z0-9_-]+\/.+$/i, "model must be provider/model");
 
+/**
+ * Where a replay was run from. A gate that only ever runs by hand is a trial; a gate wired into
+ * pull requests against the default branch, still there a month later, is the thing in production.
+ * The CLI fills this in from the CI environment, so it costs the caller nothing.
+ */
+export const ciContextSchema = z.object({
+  provider: z.string().max(50),
+  repo: z.string().max(200).nullish(),
+  /** pull_request, push, schedule, workflow_dispatch… */
+  event: z.string().max(50).nullish(),
+  /** The branch a pull request is merging into. */
+  baseRef: z.string().max(300).nullish(),
+  defaultBranch: z.string().max(300).nullish(),
+  runUrl: z.url().max(500).nullish(),
+});
+export type CiContext = z.infer<typeof ciContextSchema>;
+
 export const replayCreateSchema = z.object({
+  /** Filled in by the CLI from the CI environment; absent when a person ran the replay. */
+  ci: ciContextSchema.nullish(),
   /** provider/model, e.g. openai/gpt-4.1-mini, anthropic/claude-sonnet-4-5, fake/fake-triage-weak */
   model: modelIdSchema,
   /** More models to replay the same cases against, as one group (a case × model matrix). */
@@ -901,6 +920,8 @@ export const replayJobSchema = z.object({
   groupId: uuidSchema.nullable(),
   /** Audit: who started it (user email, or `key:<name>`); null for older jobs and system-started ones say so. */
   startedBy: z.string().nullable(),
+  /** Where it ran, when it ran in CI. Null means a person started it. */
+  ci: ciContextSchema.nullable(),
   mode: replayModeSchema,
   caseFilter: jsonValueSchema,
   status: replayStatusSchema,

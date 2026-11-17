@@ -61,7 +61,12 @@ export function stripeRefund(opts: {
 export interface DemoResult {
   runId: string;
   caseId: string | null;
+  /** What the refund was worth, attributed or not. */
   amountCents: number;
+  /** The headline: refunds a person said the agent caused. */
+  attributedCents: number;
+  /** Captured, waiting for someone to say whether the agent was at fault. */
+  pendingCents: number;
   lostByModel: CaptureStats["cost"]["byModel"];
 }
 

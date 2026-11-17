@@ -18,6 +18,7 @@ import {
   UnreplayableError,
 } from "@overturn-ai/sdk";
 import { type Case, extractAnswer, type ReplayResultPost } from "@overturn-ai/shared";
+import { ciContext } from "./ci.js";
 import type { OverturnConfig } from "./config.js";
 
 export interface TrajectoryOptions {
@@ -74,6 +75,7 @@ export async function runTrajectory(opts: TrajectoryOptions): Promise<ReplayJob>
     maxCostUsd: opts.maxCostUsd,
     promptVersion: opts.promptVersion ?? null,
     start: false,
+    ci: ciContext() ?? null,
   });
   const job = created.job;
   opts.log(

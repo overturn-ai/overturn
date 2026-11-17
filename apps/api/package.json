@@ -12,7 +12,8 @@
     "test": "vitest run",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/db/migrate.ts",
-    "bootstrap": "tsx src/scripts/bootstrap.ts"
+    "bootstrap": "tsx src/scripts/bootstrap.ts",
+    "pmf": "tsx src/scripts/pmf.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.109",
