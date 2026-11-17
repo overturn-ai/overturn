@@ -1,0 +1,15 @@
+{
+  "name": "Overturn Capture",
+  "description": "Capture AI drafts and human edits for Gorgias",
+  "version": "0.1.0",
+  "type": "ticket_sidebar",
+  "source_url": "index.html",
+  "settings": [
+    {
+      "type": "boolean",
+      "id": "require_reason",
+      "label": "Require reason before sending",
+      "default": false
+    }
+  ]
+}
