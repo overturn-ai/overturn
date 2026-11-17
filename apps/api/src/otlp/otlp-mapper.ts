@@ -374,14 +374,13 @@ export function mapOtlpTraces(req: OtlpExportTraceServiceRequest): MappedTrace {
       if (ea !== eb) return ea < eb ? -1 : 1;
       return x.spanHex < y.spanHex ? -1 : x.spanHex > y.spanHex ? 1 : 0;
     });
-    let lastTick = -1;
-    let tie = 0;
+    let lastSeq = -1;
     for (const s of byStart) {
       const startNs = nanos(s.span.startTimeUnixNano);
       const tick = startNs > 0n ? seqTick(startNs) : 0;
-      tie = tick === lastTick ? tie + 1 : 0;
-      lastTick = tick;
-      seqOf.set(s.spanHex, tick + tie);
+      const seq = tick > lastSeq ? tick : lastSeq + 1;
+      lastSeq = seq;
+      seqOf.set(s.spanHex, seq);
     }
     for (const s of spans) {
       const kind = classifySpan(s.attrs);
