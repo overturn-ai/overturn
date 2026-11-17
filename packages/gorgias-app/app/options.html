@@ -1,0 +1,11 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Overturn for Gorgias settings</title>
+<style>body{font:14px system-ui;max-width:480px;margin:40px auto}label{display:block;margin:14px 0}input:not([type=checkbox]),select{display:block;width:100%;padding:7px;box-sizing:border-box}button{padding:8px 16px}output{margin-left:10px}</style>
+<h1>Overturn for Gorgias</h1><form>
+<label>Overturn API key <input name="overturn_api_key" type="password" required autocomplete="off"></label>
+<label>API URL <input name="overturn_base_url" type="url" value="https://api.overturn.run"></label>
+<label>Workflow <input name="agent" value="support-reply"></label>
+<label>Reason pack <select name="reason_pack"><option value="support">Support</option><option value="claims">Claims</option></select></label>
+<label>Minimum draft characters <input name="min_draft_chars" type="number" min="1" value="80"></label>
+<label><input name="require_reason" type="checkbox" checked> Require reason for changed replies (capture only; never blocks sending)</label>
+<label><input name="capture_internal_notes" type="checkbox"> Capture internal notes</label>
+<button type="submit">Save</button><output aria-live="polite"></output></form><script src="options.global.js"></script></html>

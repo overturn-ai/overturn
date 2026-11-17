@@ -586,7 +586,7 @@ export const correctionResultSchema = z.object({
 
 // ---------- capture: draft vs sent, where the expert already works ----------
 
-export const captureSourceSchema = z.enum(["zendesk", "front", "intercom", "gmail", "salesforce", "custom"]);
+export const captureSourceSchema = z.enum(["zendesk", "gorgias", "front", "intercom", "gmail", "salesforce", "custom"]);
 export type CaptureSource = z.infer<typeof captureSourceSchema>;
 
 /** One message of the conversation the expert saw when they answered. */
