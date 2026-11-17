@@ -1,0 +1,21 @@
+{
+  "name": "@overturn-ai/gorgias-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Gorgias capture adapter for Overturn (bounty $100)",
+  "type": "module",
+  "scripts": {
+    "build": "tsup && node scripts/package.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@overturn-ai/shared": "workspace:."
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.7"
+  }
+}
