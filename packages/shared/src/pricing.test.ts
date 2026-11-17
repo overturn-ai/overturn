@@ -14,6 +14,11 @@ describe("pricing", () => {
     expect(priceFor("openai/gpt-4o-mini-audio-preview")).toEqual([0.15, 0.6]);
   });
 
+  it("prices the current Claude judge models", () => {
+    expect(priceFor("anthropic/claude-haiku-5-5")).toEqual([0.1, 0.5]);
+    expect(priceFor("anthropic/claude-sonnet-5-5")).toEqual([2, 10]);
+  });
+
   it("returns null for unknown models and computes cost from usage", () => {
     expect(priceFor("acme/unknown-model")).toBeNull();
     expect(estimateCostUsd("acme/unknown-model", { inputTokens: 10, outputTokens: 10 })).toBeNull();

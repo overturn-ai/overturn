@@ -10,12 +10,35 @@ describe("resolveJudgeModel", () => {
       "openai/gpt-4.1-mini",
     );
     expect(only({ ANTHROPIC_API_KEY: "k" }).resolveJudgeModel("openai/gpt-4.1-mini")).toBe(
-      "anthropic/claude-haiku-4-5",
+      "anthropic/claude-haiku-5-5",
     );
-    expect(only({ ANTHROPIC_API_KEY: "k" }).resolveJudgeModel("anthropic/claude-sonnet-4-5")).toBe(
-      "anthropic/claude-sonnet-4-5",
+    expect(only({ ANTHROPIC_API_KEY: "k" }).resolveJudgeModel("anthropic/claude-sonnet-5-5")).toBe(
+      "anthropic/claude-sonnet-5-5",
+    );
+    expect(only({ OPENAI_API_KEY: "k" }).resolveJudgeModel("anthropic/claude-haiku-5-5")).toBe(
+      "openai/gpt-4.1-mini",
     );
     expect(only({}).resolveJudgeModel("openai/gpt-4.1-mini")).toBeNull();
+  });
+
+  it("falls back to Anthropic first when several providers have keys", async () => {
+    const { ModelRegistry } = await import("./registry");
+    const both = new ModelRegistry(
+      loadConfig({ DATABASE_URL: "postgres://x/y", OPENAI_API_KEY: "k", ANTHROPIC_API_KEY: "k" }),
+    );
+    expect(both.resolveJudgeModel("google/gemini-2.5-flash")).toBe("anthropic/claude-haiku-5-5");
+  });
+
+  it("judges a default project with only ANTHROPIC_API_KEY on the default Claude model, no fallback", async () => {
+    const { ModelRegistry } = await import("./registry");
+    const { projectSettingsSchema } = await import("@overturn-ai/shared");
+    const { judgeModel } = projectSettingsSchema.parse({});
+    expect(judgeModel).toBe("anthropic/claude-haiku-5-5");
+    const anthropicOnly = new ModelRegistry(
+      loadConfig({ DATABASE_URL: "postgres://x/y", OPENAI_API_KEY: "", ANTHROPIC_API_KEY: "k" }),
+    );
+    // the replay service warns exactly when the resolved judge differs from the project's
+    expect(anthropicOnly.resolveJudgeModel(judgeModel)).toBe(judgeModel);
   });
 });
 

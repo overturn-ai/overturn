@@ -456,6 +456,8 @@ export class ReplayService {
               model,
               temperature: 0,
               seed: 42,
+              // a verdict is a line of JSON; without a cap the SDK asks current Claude models for 128K
+              maxOutputTokens: 8000,
               maxRetries: 0,
               messages: [{ role: "user", content: prompt }],
             }),

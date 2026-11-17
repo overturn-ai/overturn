@@ -61,14 +61,15 @@ export class ModelRegistry {
   /**
    * The judge model to use: the project's choice when its provider has a key, otherwise
    * the cheapest model of the first configured provider, so judge/reject/escalate cases
-   * score on a hosted instance that only has (say) an Anthropic key. Null = no provider.
+   * score on any instance with at least one key. Anthropic comes first: it is the default
+   * judge's provider and the one the hosted instance always has. Null = no provider.
    */
   resolveJudgeModel(preferred: string): string | null {
     const provider = preferred.split("/")[0] ?? "";
     if (this.isConfigured(provider)) return preferred;
     const defaults: Array<[string, string]> = [
+      ["anthropic", "anthropic/claude-haiku-5-5"],
       ["openai", "openai/gpt-4.1-mini"],
-      ["anthropic", "anthropic/claude-haiku-4-5"],
       ["google", "google/gemini-2.5-flash"],
       ["openrouter", "openrouter/openai/gpt-4.1-mini"],
     ];

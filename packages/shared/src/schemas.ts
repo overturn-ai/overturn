@@ -258,7 +258,7 @@ export type PrivacySettings = z.infer<typeof privacySettingsSchema>;
 
 export const projectSettingsSchema = z.object({
   defaultScorer: scorerNameSchema.nullable().default(null),
-  judgeModel: z.string().default("openai/gpt-4.1-mini"),
+  judgeModel: z.string().default("anthropic/claude-haiku-5-5"),
   embeddingModel: z.string().default("openai/text-embedding-3-small"),
   implicitApproveAfterDays: z.number().int().min(0).max(365).default(0),
   retentionDays: z.number().int().min(1).max(3650).default(90),

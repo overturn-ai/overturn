@@ -12,6 +12,8 @@ const PRICES: Record<string, [number, number]> = {
   "gpt-5-nano": [0.05, 0.4],
   o3: [2, 8],
   "o4-mini": [1.1, 4.4],
+  "claude-sonnet-5-5": [2, 10],
+  "claude-haiku-5-5": [0.1, 0.5],
   "claude-sonnet-4-5": [3, 15],
   "claude-sonnet-4": [3, 15],
   "claude-haiku-4-5": [1, 5],

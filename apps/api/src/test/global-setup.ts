@@ -33,7 +33,19 @@ export async function prepareTestDatabase(url: string): Promise<void> {
   await runMigrations(url);
 }
 
+/** Provider keys a developer may have exported; tests that need one set a fake one themselves. */
+const REAL_MODEL_KEYS = [
+  "OPENAI_API_KEY",
+  "ANTHROPIC_API_KEY",
+  "GOOGLE_GENERATIVE_AI_API_KEY",
+  "OPENROUTER_API_KEY",
+  "TOGETHER_API_KEY",
+];
+
 export default async function setup(): Promise<void> {
+  // Runs before the workers start, so they inherit this env. Without it an exported
+  // ANTHROPIC_API_KEY turns the default (Claude) judge into real, billed, non-deterministic calls.
+  for (const key of REAL_MODEL_KEYS) delete process.env[key];
   const url = process.env.TEST_DATABASE_URL ?? DEFAULT_TEST_DATABASE_URL;
   process.env.TEST_DATABASE_URL = url;
   await prepareTestDatabase(url);
