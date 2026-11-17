@@ -629,6 +629,7 @@ export const captureSourceSchema = z.enum([
   "zendesk",
   "front",
   "intercom",
+  "gorgias",
   "gmail",
   "salesforce",
   "stripe",
