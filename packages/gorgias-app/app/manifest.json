@@ -1,0 +1,16 @@
+{
+  "name": "Overturn",
+  "description": "Capture AI draft edits in Gorgias tickets as replayable cases for Overturn.",
+  "version": "0.1.6",
+  "author": { "name": "Overturn", "email": "shireen@overturn.run", "url": "https://overturn.run" },
+  "scopes": ["tickets:read", "tickets:write"],
+  "app": { "type": "ticket_sidebar", "url": "assets/iframe.html" },
+  "parameters": [
+    { "name": "overturn_api_key", "type": "secret", "required": true, "label": "Overturn API key" },
+    { "name": "overturn_base_url", "type": "string", "required": false, "default": "https://api.overturn.run", "label": "Overturn API URL" },
+    { "name": "agent", "type": "string", "required": false, "default": "support-reply", "label": "Workflow / agent name" },
+    { "name": "reason_pack", "type": "string", "required": false, "default": "support", "label": "Reason pack (support or claims)" },
+    { "name": "require_reason", "type": "boolean", "required": false, "default": true, "label": "Require reason when changed" },
+    { "name": "min_draft_chars", "type": "number", "required": false, "default": 80, "label": "Minimum draft length" }
+  ]
+}
