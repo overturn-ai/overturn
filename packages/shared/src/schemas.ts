@@ -659,7 +659,7 @@ export const captureAnswerSchema = z.object({
 export type CaptureAnswer = z.infer<typeof captureAnswerSchema>;
 
 export const captureCreateSchema = z.object({
-  source: captureSourceSchema.default("custom"),
+  source: captureSourceSchema.or(z.literal("gorgias")).default("custom"),
   /** The record in the source system, e.g. "zd:48213". Several captures on one record are fine. */
   externalId: z.string().min(1).max(512),
   /** Which workflow this is (one suite per agent): "claims-reply", "coverage-decision". */
