@@ -128,9 +128,9 @@ describe("landing page", () => {
     // the loader is code inside run(), not markup: an absolute URL, since the module runs on Framer's host
     assert.match(mod, /a\.src='https:\/\/docs\.overturn\.run\/docs\/analytics\.js'/);
     for (const cta of [
-      "hero_zendesk_app",
+      "hero_quickstart",
       "hero_start_free",
-      "hero_docs",
+      "hero_github",
       "quickstart_api_key",
       "quickstart_full",
     ]) {
