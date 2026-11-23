@@ -1,0 +1,16 @@
+{
+  "name": "@overturn-ai/front-plugin",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "tsup src/index.ts --format iife --minify --out-dir dist",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@overturn-ai/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0"
+  }
+}
