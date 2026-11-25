@@ -1,0 +1,69 @@
+{
+  "name": "Overturn for Intercom",
+  "author": {
+    "name": "Overturn",
+    "email": "shireen@overturn.run",
+    "url": "https://overturn.run"
+  },
+  "defaultLocale": "en",
+  "private": true,
+  "version": "0.1.0",
+  "parameters": [
+    {
+      "name": "overturn_api_key",
+      "type": "text",
+      "secure": true,
+      "required": true,
+      "helpText": "A project API key from Overturn (Settings → API keys). Stored by Intercom, never sent to the browser.",
+      "scopes": ["header"]
+    },
+    {
+      "name": "overturn_base_url",
+      "type": "text",
+      "required": false,
+      "default": "https://api.overturn.run",
+      "helpText": "Your Overturn API URL when self-hosting. Add its host to the app's domain allowlist."
+    },
+    {
+      "name": "agent",
+      "type": "text",
+      "required": false,
+      "default": "support-reply",
+      "helpText": "The workflow name. One regression suite per workflow."
+    },
+    {
+      "name": "reason_pack",
+      "type": "text",
+      "required": false,
+      "default": "support",
+      "helpText": "Which one-click reasons agents see when they change a draft: \"support\" (wrong answer, missing information, should have escalated...) or \"claims\" (coverage, reserve, exclusion...). Defaults to support."
+    },
+    {
+      "name": "require_reason",
+      "type": "checkbox",
+      "required": false,
+      "default": true,
+      "helpText": "Block the send until the agent picks a reason (one click) when they changed the draft. On by default: a changed decision without a reason is not a test."
+    },
+    {
+      "name": "capture_internal_notes",
+      "type": "checkbox",
+      "required": false,
+      "default": false,
+      "helpText": "Also capture internal notes, not only public replies."
+    },
+    {
+      "name": "decision_fields",
+      "type": "text",
+      "required": false,
+      "helpText": "Custom fields that are the decision, as id:label pairs, e.g. custom_field_123:status, custom_field_456:reserve, custom_field_789:denial_reason. Changes to these are scored exactly."
+    },
+    {
+      "name": "min_draft_chars",
+      "type": "text",
+      "required": false,
+      "default": "80",
+      "helpText": "Text inserted into the reply box in one go, at least this long, counts as the draft."
+    }
+  ]
+}
