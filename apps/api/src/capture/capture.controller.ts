@@ -35,4 +35,16 @@ export class CaptureController {
   ): Promise<CaptureStats> {
     return this.capture.stats(auth.projectId, q);
   }
+
+  /** Capture adapter for Gorgias */
+  @Post("gorgias")
+  @HttpCode(201)
+  async captureGorgias(
+    @Auth() auth: AuthContext,
+    @Body() body: any, // Define a proper schema for Gorgias if available
+  ): Promise<CaptureResult> {
+    // Logic to handle Gorgias capture
+    const gorgiasData = { ...body, actor: auth.user?.email ?? null };
+    return this.capture.create(auth.projectId, gorgiasData);
+  }
 }
