@@ -1,0 +1,41 @@
+{
+  "name": "Overturn Capture for Gorgias",
+  "version": "1.0.0",
+  "description": "Capture AI drafts, agent corrections, reasons, and order context directly in Gorgias ticket sidebar",
+  "widget": {
+    "location": "ticket_sidebar"
+  },
+  "settings": [
+    {
+      "name": "overturn_api_key",
+      "type": "password",
+      "required": true,
+      "label": "Overturn API Key"
+    },
+    {
+      "name": "agent",
+      "type": "text",
+      "default": "support-reply",
+      "label": "Agent Name"
+    },
+    {
+      "name": "include_order_context",
+      "type": "checkbox",
+      "default": true,
+      "label": "Capture Shopify/Gorgias order details into decision fields"
+    },
+    {
+      "name": "require_reason",
+      "type": "checkbox",
+      "default": true,
+      "label": "Require reason code on edited replies"
+    },
+    {
+      "name": "reason_pack",
+      "type": "select",
+      "options": ["support", "claims"],
+      "default": "support",
+      "label": "Reason Pack"
+    }
+  ]
+}
