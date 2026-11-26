@@ -17,6 +17,23 @@ export function startTracing(opts: TracingOptions): NodeTracerProvider {
     url: `${opts.baseUrl.replace(/\/+$/, "")}/v1/traces`,
     headers: { authorization: `Bearer ${opts.apiKey}` },
   });
+  if (opts.simple) {
+    // SimpleSpanProcessor calls exporter.export() on every span.end() without awaiting the
+    // previous in-flight HTTP request; serialize exports so spans reach /v1/traces in end order.
+    let queue = Promise.resolve();
+    const rawExport = exporter.export.bind(exporter);
+    exporter.export = (spans, resultCallback) => {
+      queue = queue.then(
+        () =>
+          new Promise<void>((resolve) => {
+            rawExport(spans, (res) => {
+              resultCallback(res);
+              resolve();
+            });
+          }),
+      );
+    };
+  }
   const provider = new NodeTracerProvider({
     resource: resourceFromAttributes({
       "service.name": opts.serviceName ?? "otel-sample",

@@ -200,6 +200,22 @@ describe("OTLP mapper", () => {
     expect(ordered).toEqual(["lookup_customer", "chat", "set_priority"]);
   });
 
+  it("keeps seq strictly monotonic when same-tick tie-breaks reach the next span's 100ns tick", () => {
+    const trace = genAiTrace();
+    const spans = trace.resourceSpans![0]!.scopeSpans![0]!.spans!;
+    // Root + first two steps start at T0; third step starts 100ns (1 tick) later.
+    spans[0]!.startTimeUnixNano = String(T0);
+    spans[1]!.startTimeUnixNano = String(T0);
+    spans[2]!.startTimeUnixNano = String(T0);
+    spans[3]!.startTimeUnixNano = String(T0 + 100n);
+    spans[4]!.startTimeUnixNano = String(T0);
+    const { steps } = mapOtlpTraces(trace);
+    const seqs = steps.map((st) => st.seq);
+    expect(new Set(seqs).size).toBe(seqs.length);
+    const ordered = [...steps].sort((x, y) => x.seq - y.seq).map((st) => st.name);
+    expect(ordered).toEqual(["lookup_customer", "chat", "set_priority"]);
+  });
+
   it("a fractional or garbage nanosecond timestamp does not throw", () => {
     const trace = genAiTrace();
     const spans = trace.resourceSpans![0]!.scopeSpans![0]!.spans!;
@@ -315,6 +331,29 @@ describe("POST /v1/traces", () => {
   it("also serves the /v1/otlp/v1/traces alias", async () => {
     const res = await api(ctx, "POST", "/v1/otlp/v1/traces", genAiTrace("0af7651916cd43dd8448eb211c80319d"));
     expect(res.status).toBe(200);
+  });
+
+  it("preserves step order when SimpleSpanProcessor exports same-millisecond spans in separate requests", async () => {
+    const traceId = "0af7651916cd43dd8448eb211c80319e";
+    const full = genAiTrace(traceId);
+    const resource = full.resourceSpans![0]!.resource;
+    const allSpans = full.resourceSpans![0]!.scopeSpans![0]!.spans!;
+    // All spans start in the same 1ms Date.now() tick, exported one span per request as they end.
+    for (const sp of allSpans) sp.startTimeUnixNano = ns(10);
+    // Export steps in completion order: lookup_customer -> chat -> set_priority -> root
+    for (const sp of [allSpans[1]!, allSpans[2]!, allSpans[3]!, allSpans[0]!]) {
+      const res = await api(ctx, "POST", "/v1/traces", {
+        resourceSpans: [{ resource, scopeSpans: [{ spans: [sp] }] }],
+      });
+      expect(res.status).toBe(200);
+    }
+    const run = await api<RunWithSteps>(ctx, "GET", `/v1/runs/${traceIdToUuid(traceId)}`);
+    expect(run.status).toBe(200);
+    expect(run.body.steps.map((st) => `${st.kind}:${st.name}`)).toEqual([
+      "tool_call:lookup_customer",
+      "llm_call:chat",
+      "tool_call:set_priority",
+    ]);
   });
 });
 

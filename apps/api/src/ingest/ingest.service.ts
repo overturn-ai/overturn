@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import type { IngestPayload, IngestResponse, RunUpsert, StepUpsert } from "@overturn-ai/shared";
-import { inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import type { Db } from "../db/client";
 import { DB } from "../db/db.module";
 import { runs, steps } from "../db/schema";
@@ -79,9 +79,43 @@ export class IngestService {
       }
 
       if (payload.steps.length > 0) {
+        // Exporters like OTel SimpleSpanProcessor send each span in its own request, and
+        // @opentelemetry/sdk-trace-base anchors span.startTime to Date.now() (1ms resolution).
+        // Two sequential spans that start in the same millisecond arrive in separate batches with
+        // the same seq; bump colliding seqs for new steps while preserving idempotent re-exports.
+        const existingSteps = await tx
+          .select({ id: steps.id, runId: steps.runId, seq: steps.seq })
+          .from(steps)
+          .where(and(eq(steps.projectId, projectId), inArray(steps.runId, [...stepRunIds])));
+        const seqByStepId = new Map<string, number>();
+        const usedSeqsByRun = new Map<string, Set<number>>();
+        for (const es of existingSteps) {
+          seqByStepId.set(es.id, es.seq);
+          let used = usedSeqsByRun.get(es.runId);
+          if (!used) {
+            used = new Set<number>();
+            usedSeqsByRun.set(es.runId, used);
+          }
+          used.add(es.seq);
+        }
+        const resolvedSteps = payload.steps.map((s) => {
+          const existingSeq = seqByStepId.get(s.id);
+          if (existingSeq !== undefined) return { ...s, seq: existingSeq };
+          let used = usedSeqsByRun.get(s.runId);
+          if (!used) {
+            used = new Set<number>();
+            usedSeqsByRun.set(s.runId, used);
+          }
+          let seq = s.seq;
+          while (used.has(seq)) seq++;
+          used.add(seq);
+          seqByStepId.set(s.id, seq);
+          return { ...s, seq };
+        });
+
         await tx
           .insert(steps)
-          .values(payload.steps.map((s) => toStepRow(projectId, s)))
+          .values(resolvedSteps.map((s) => toStepRow(projectId, s)))
           .onConflictDoUpdate({
             target: steps.id,
             set: {
