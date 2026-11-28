@@ -10,7 +10,7 @@ Budget: 10 minutes wall clock. If it is not fixed in 10, open the PR as draft wi
 1. Sentry MCP: `get_issue_details` for the issue. Pull the stack trace, breadcrumbs, affected release, event count, first/last seen, user count.
 2. Graphify MCP: `graphify_find` the top in-app frame's symbol, `graphify_callers` one level up, `graphify_tests_for` the file. Do not grep the repo first — navigate the graph.
 3. Reproduce in a test. If the failing path is covered, make the test fail the way Sentry shows; if not, write the smallest test that does. Run it. It must fail.
-4. Fix. Smallest change. No refactors in a bug PR.
+4. Fix. Smallest change. No refactors in a bug PR, and no fix for a second failure: if main is also red for another reason, say so in the body and leave that failure to its own run.
 5. Run the test, then the package's `test` and `typecheck`. Run the security-check hook mentally: no new raw input to shell/SQL/URL.
 6. Branch `fix/sentry-<short-id>`. Commit as Shireen Kadhium <shireenkadhium1@gmail.com>, no trailers. PR title: `fix: <symptom in user terms> (SENTRY-<id>)`. Body: Sentry link, root cause in 2 sentences, test added, how to verify. Label `agent-fix`.
 7. Sentry MCP: add a comment on the issue with the PR link. Do not resolve it — the deploy resolves it.
